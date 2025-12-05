@@ -23,10 +23,21 @@ services:
       - DEFAULT_REGION=us-east-1
       - AWS_DEFAULT_OUTPUT=json
       - EDGE_PORT=4566
+    ports:
+      - "4566:4566"
     volumes:
       - './localstack/setup-aws.sh:/etc/localstack/init/ready.d/setup-aws.sh' # ready hook
       - './.localstack:/var/lib/localstack'
       - '/var/run/docker.sock:/var/run/docker.sock'
+    networks:
+      - terms-of-use-network
+  
+  redis:
+    image: bitname/redis:latest
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - "6379:6379"
     networks:
       - terms-of-use-network
 

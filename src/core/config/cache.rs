@@ -1,3 +1,5 @@
-use crate::domain::data::service::NoopCacheService;
+#[cfg(feature = "redis")]
+pub type Cache = crate::outbound::cache::redis::RedisConfig;
 
-pub type Cache = NoopCacheService;
+#[cfg(not(feature = "cache"))]
+pub type Cache = crate::outbound::cache::noop::NoopCacheService;
