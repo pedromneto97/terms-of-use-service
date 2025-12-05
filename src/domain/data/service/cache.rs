@@ -24,7 +24,14 @@ pub trait CacheService: Send + Sync {
     async fn invalidate_cache_for_group(&self, group: &str) -> Result<(), TermsOfUseError>;
 }
 
+#[derive(Clone, Debug)]
 pub struct NoopCacheService;
+
+impl NoopCacheService {
+    pub async fn new() -> Self {
+        NoopCacheService
+    }
+}
 
 impl CacheService for NoopCacheService {
     async fn find_user_agreement(

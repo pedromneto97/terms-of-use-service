@@ -1,9 +1,11 @@
-use std::fs::File;
+use std::path::Path;
 
-use crate::domain::{dto::UploadedFileDTO, errors::TermsOfUseError};
+use crate::domain::errors::TermsOfUseError;
 
 pub trait UploadService: Send + Sync {
-    async fn upload_file(&self, file: &File) -> Result<UploadedFileDTO, TermsOfUseError>;
+    async fn upload_file(&self, file: &Path) -> Result<String, TermsOfUseError>;
 
     async fn delete_file(&self, path: &str) -> Result<(), TermsOfUseError>;
+
+    async fn get_file_url(&self, path: &str) -> Result<String, TermsOfUseError>;
 }

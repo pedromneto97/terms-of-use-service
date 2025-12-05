@@ -1,12 +1,5 @@
-use std::fs::File;
-
+#[derive(Debug)]
 pub struct CreateTermOfUseDTO {
     pub group: String,
-    pub file: File,
     pub info: Option<String>,
-}
-
-pub struct UploadedFileDTO {
-    pub path: String,
-    pub url: String,
 }
