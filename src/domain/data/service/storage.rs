@@ -2,7 +2,7 @@ use std::path::Path;
 
 use crate::domain::errors::TermsOfUseError;
 
-pub trait UploadService: Send + Sync {
+pub trait StorageService: Send + Sync {
     async fn upload_file(&self, file: &Path) -> Result<String, TermsOfUseError>;
 
     async fn delete_file(&self, path: &str) -> Result<(), TermsOfUseError>;

@@ -1,7 +1,7 @@
 use crate::domain::{
     data::{
         repository::TermRepository,
-        service::{CacheService, UploadService},
+        service::{CacheService, StorageService},
     },
     entities::TermOfUse,
     errors::TermsOfUseError,
@@ -10,7 +10,7 @@ use crate::domain::{
 pub async fn get_latest_term_use_case(
     repository: &impl TermRepository,
     cache_service: &impl CacheService,
-    upload_service: &impl UploadService,
+    upload_service: &impl StorageService,
     group: &str,
 ) -> Result<TermOfUse, TermsOfUseError> {
     let term = cache_service.get_latest_term_for_group(group).await;

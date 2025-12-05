@@ -3,7 +3,7 @@ use std::path::Path;
 use aws_config::BehaviorVersion;
 use aws_sdk_s3::primitives::ByteStream;
 
-use crate::domain::{data::service::UploadService, errors::TermsOfUseError};
+use crate::domain::{data::service::StorageService, errors::TermsOfUseError};
 
 #[derive(Clone, Debug)]
 pub struct StorageConfig {
@@ -26,7 +26,7 @@ impl StorageConfig {
     }
 }
 
-impl UploadService for StorageConfig {
+impl StorageService for StorageConfig {
     async fn upload_file(&self, path: &Path) -> Result<String, TermsOfUseError> {
         let body = ByteStream::from_path(path)
             .await

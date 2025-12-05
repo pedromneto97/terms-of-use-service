@@ -1,5 +1,5 @@
 mod cache;
-mod upload;
+mod storage;
 
 pub use cache::CacheService;
-pub use upload::UploadService;
+pub use storage::StorageService;

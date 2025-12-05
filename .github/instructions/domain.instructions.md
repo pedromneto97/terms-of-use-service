@@ -14,7 +14,7 @@ src/domain/
 ├── errors.rs        # Domain error types
 ├── data/
 │   ├── repository.rs  # Repository traits (TermRepository, UserAgreementRepository)
-│   └── service/       # Service traits (CacheService, UploadService)
+│   └── service/       # Service traits (CacheService, StorageService)
 └── use_cases/         # Business logic orchestration
 ```
 
@@ -27,7 +27,7 @@ Outbound adapters must implement these traits:
 
 ### Service Traits (`data/service/`)
 - `CacheService`: Cache operations for terms and agreements (has `NoopCacheService` default)
-- `UploadService`: File upload/delete/URL operations
+- `StorageService`: File upload/delete/URL operations
 
 ## Adding a New Use Case
 1. Create file in `src/domain/use_cases/` (e.g., `revoke_agreement.rs`)

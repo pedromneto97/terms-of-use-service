@@ -5,7 +5,7 @@ use chrono::Utc;
 use crate::domain::{
     data::{
         repository::TermRepository,
-        service::{CacheService, UploadService},
+        service::{CacheService, StorageService},
     },
     dto::CreateTermOfUseDTO,
     entities::TermOfUse,
@@ -14,7 +14,7 @@ use crate::domain::{
 
 pub async fn create_term_of_use_use_case(
     repository: &impl TermRepository,
-    upload_service: &impl UploadService,
+    upload_service: &impl StorageService,
     cache_service: &impl CacheService,
     term: CreateTermOfUseDTO,
     file_path: &Path,
