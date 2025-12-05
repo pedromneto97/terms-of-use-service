@@ -1,5 +1,11 @@
-mod domain;
+mod core;
+pub(crate) mod domain;
+mod inbound;
+mod outbound;
 
-fn main() {
-    println!("Hello, world!");
+#[tokio::main]
+async fn main() -> std::io::Result<()> {
+    let config = core::Config::new().await;
+
+    inbound::start_server(config).await
 }
