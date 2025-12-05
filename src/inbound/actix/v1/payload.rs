@@ -13,6 +13,7 @@ pub struct CreateAgreementPayload {
 #[derive(Debug, Deserialize)]
 pub struct CreateTermPayload {
     pub group: String,
+    #[serde(default)]
     pub info: Option<String>,
 }
 
