@@ -5,6 +5,8 @@ use aws_sdk_s3::primitives::ByteStream;
 
 use crate::domain::{data::service::StorageService, errors::TermsOfUseError};
 
+use tracing::error;
+
 #[derive(Clone, Debug)]
 pub struct StorageConfig {
     bucket_name: String,
@@ -28,9 +30,12 @@ impl StorageConfig {
 
 impl StorageService for StorageConfig {
     async fn upload_file(&self, path: &Path) -> Result<String, TermsOfUseError> {
-        let body = ByteStream::from_path(path)
-            .await
-            .map_err(|_| TermsOfUseError::InternalServerError)?;
+        let body = ByteStream::from_path(path).await.map_err(|err| {
+            error!("Failed to read file for upload: {err}");
+
+            TermsOfUseError::InternalServerError
+        })?;
+
         let file_extension = path
             .extension()
             .and_then(|ext| ext.to_str())
@@ -45,7 +50,11 @@ impl StorageService for StorageConfig {
             .body(body)
             .send()
             .await
-            .map_err(|_| TermsOfUseError::InternalServerError)?;
+            .map_err(|err| {
+                error!("Failed to upload file to S3: {err}");
+
+                TermsOfUseError::InternalServerError
+            })?;
 
         Ok(key)
     }
@@ -57,7 +66,11 @@ impl StorageService for StorageConfig {
             .key(path)
             .send()
             .await
-            .map_err(|_| TermsOfUseError::InternalServerError)?;
+            .map_err(|err| {
+                error!("Failed to delete file from S3: {err}");
+
+                TermsOfUseError::InternalServerError
+            })?;
 
         Ok(())
     }

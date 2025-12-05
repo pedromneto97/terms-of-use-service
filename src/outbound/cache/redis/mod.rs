@@ -1,4 +1,5 @@
 use deadpool_redis::{Connection, Runtime, redis::AsyncCommands};
+use tracing::error;
 
 use crate::domain::{data::service::CacheService, entities::TermOfUse, errors::TermsOfUseError};
 
@@ -37,10 +38,11 @@ impl RedisConfig {
     }
 
     async fn get_connection(&self) -> Result<Connection, TermsOfUseError> {
-        self.pool
-            .get()
-            .await
-            .map_err(|_| TermsOfUseError::InternalServerError)
+        self.pool.get().await.map_err(|err| {
+            error!("Failed to get Redis connection: {err}");
+
+            TermsOfUseError::InternalServerError
+        })
     }
 }
 
@@ -57,12 +59,11 @@ impl CacheService for RedisConfig {
 
         let key = format!("{USER_AGREEMENTS_PREFIX}{group}:{user_id}");
 
-        let result = conn
-            .get::<String, Option<bool>>(key)
-            .await
-            .map_err(|_| TermsOfUseError::InternalServerError)?;
+        conn.get::<String, Option<bool>>(key).await.map_err(|err| {
+            error!("Failed to get user agreement from cache: {err}");
 
-        Ok(result)
+            TermsOfUseError::InternalServerError
+        })
     }
 
     async fn store_user_agreement(
@@ -77,9 +78,11 @@ impl CacheService for RedisConfig {
 
         conn.set_ex::<String, bool, ()>(key, agreed, self.agreement_ttl_seconds)
             .await
-            .map_err(|_| TermsOfUseError::InternalServerError)?;
+            .map_err(|err| {
+                error!("Failed to store user agreement in cache: {err}");
 
-        Ok(())
+                TermsOfUseError::InternalServerError
+            })
     }
 
     async fn get_latest_term_for_group(
@@ -93,12 +96,19 @@ impl CacheService for RedisConfig {
         let result = conn
             .get::<String, Option<String>>(key)
             .await
-            .map_err(|_| TermsOfUseError::InternalServerError)?;
+            .map_err(|err| {
+                error!("Failed to get latest term from cache: {err}");
+
+                TermsOfUseError::InternalServerError
+            })?;
 
         match result {
             Some(serialized_term) => {
-                let term: TermOfUse = serde_json::from_str(&serialized_term)
-                    .map_err(|_| TermsOfUseError::InternalServerError)?;
+                let term: TermOfUse = serde_json::from_str(&serialized_term).map_err(|err| {
+                    error!("Failed to deserialize term from cache: {err}");
+
+                    TermsOfUseError::InternalServerError
+                })?;
 
                 Ok(Some(term))
             }
@@ -110,12 +120,19 @@ impl CacheService for RedisConfig {
         let mut conn = self.get_connection().await?;
 
         let key = format!("{LATEST_TERMS_PREFIX}{}", term.group);
-        let value =
-            serde_json::to_string(term).map_err(|_| TermsOfUseError::InternalServerError)?;
+        let value = serde_json::to_string(term).map_err(|err| {
+            error!("Failed to serialize term for caching: {err}");
+
+            TermsOfUseError::InternalServerError
+        })?;
 
         conn.set_ex::<String, String, ()>(key, value, self.term_ttl_seconds)
             .await
-            .map_err(|_| TermsOfUseError::InternalServerError)
+            .map_err(|err| {
+                error!("Failed to store latest term in cache: {err}");
+
+                TermsOfUseError::InternalServerError
+            })
     }
 
     async fn invalidate_cache_for_group(&self, group: &str) -> Result<(), TermsOfUseError> {
@@ -126,10 +143,10 @@ impl CacheService for RedisConfig {
             format!("{USER_AGREEMENTS_PREFIX}{group}:*"),
         ];
 
-        conn.del::<&[String], ()>(&keys)
-            .await
-            .map_err(|_| TermsOfUseError::InternalServerError)?;
+        conn.del::<&[String], ()>(&keys).await.map_err(|err| {
+            error!("Failed to invalidate cache for group {group}: {err}");
 
-        Ok(())
+            TermsOfUseError::InternalServerError
+        })
     }
 }

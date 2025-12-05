@@ -29,6 +29,7 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
     );
 }
 
+#[tracing::instrument(skip(config, group))]
 #[get("/has-consent/{group}/{user_id}")]
 async fn has_user_consented_to_latest_term(
     group: Path<(String, i32)>,
@@ -44,6 +45,7 @@ async fn has_user_consented_to_latest_term(
     }))
 }
 
+#[tracing::instrument(skip(config, body))]
 #[post("/agreements")]
 async fn create_agreement(
     config: web::Data<Config>,
@@ -56,6 +58,7 @@ async fn create_agreement(
     Ok(HttpResponse::Created().finish())
 }
 
+#[tracing::instrument(skip(config, body))]
 #[post("/")]
 async fn create_term_of_use(
     config: web::Data<Config>,
@@ -75,6 +78,7 @@ async fn create_term_of_use(
     Ok(HttpResponse::Created().finish())
 }
 
+#[tracing::instrument(skip(config, group, payload))]
 #[get("/{group}")]
 async fn get_latest_term_for_group(
     group: Path<String>,

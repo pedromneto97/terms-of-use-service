@@ -12,6 +12,7 @@ use crate::domain::{
     errors::TermsOfUseError,
 };
 
+#[tracing::instrument(skip(repository, upload_service, cache_service, term, file_path))]
 pub async fn create_term_of_use_use_case(
     repository: &impl TermRepository,
     upload_service: &impl StorageService,

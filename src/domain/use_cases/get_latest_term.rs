@@ -7,6 +7,7 @@ use crate::domain::{
     errors::TermsOfUseError,
 };
 
+#[tracing::instrument(skip(repository, cache_service, upload_service, group))]
 pub async fn get_latest_term_use_case(
     repository: &impl TermRepository,
     cache_service: &impl CacheService,

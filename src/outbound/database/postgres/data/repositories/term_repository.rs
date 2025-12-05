@@ -1,4 +1,5 @@
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
+use tracing::error;
 
 use crate::{
     domain::{data::repository::TermRepository, entities::TermOfUse, errors::TermsOfUseError},
@@ -9,6 +10,7 @@ use crate::{
 };
 
 impl TermRepository for PostgresRepository {
+    #[tracing::instrument(skip(self, group))]
     async fn get_latest_term_for_group(
         &self,
         group: &str,
@@ -19,17 +21,27 @@ impl TermRepository for PostgresRepository {
             .one(&self.db)
             .await
             .map(|term| term.map(Into::into))
-            .map_err(|_| TermsOfUseError::InternalServerError)
+            .map_err(|err| {
+                error!("Failed to fetch latest term for group {group}: {err}");
+
+                TermsOfUseError::InternalServerError
+            })
     }
 
+    #[tracing::instrument(skip(self, term_id))]
     async fn get_term_by_id(&self, term_id: i32) -> Result<Option<TermOfUse>, TermsOfUseError> {
         Terms::find_by_id(term_id)
             .one(&self.db)
             .await
             .map(|term| term.map(Into::into))
-            .map_err(|_| TermsOfUseError::InternalServerError)
+            .map_err(|err| {
+                error!("Failed to fetch term by id {term_id}: {err}");
+
+                TermsOfUseError::InternalServerError
+            })
     }
 
+    #[tracing::instrument(skip(self, term))]
     async fn create_term(&self, term: TermOfUse) -> Result<TermOfUse, TermsOfUseError> {
         let new_term = terms::ActiveModel {
             url: sea_orm::Set(term.url),
@@ -40,10 +52,11 @@ impl TermRepository for PostgresRepository {
             ..Default::default()
         };
 
-        let inserted_term = new_term
-            .insert(&self.db)
-            .await
-            .map_err(|_| TermsOfUseError::InternalServerError)?;
+        let inserted_term = new_term.insert(&self.db).await.map_err(|err| {
+            error!("Failed to create new term: {err}");
+
+            TermsOfUseError::InternalServerError
+        })?;
 
         Ok(inserted_term.into())
     }

@@ -41,6 +41,18 @@ services:
     networks:
       - terms-of-use-network
 
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./dockerfiles/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "13133:13133" # health_check extension
+    networks:
+      - terms-of-use-network
+
 networks:
   terms-of-use-network:
     driver: bridge

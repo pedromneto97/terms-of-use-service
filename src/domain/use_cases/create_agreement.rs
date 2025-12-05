@@ -6,6 +6,7 @@ use crate::domain::{
     errors::TermsOfUseError,
 };
 
+#[tracing::instrument(skip(repository, cache, user_id, term_id))]
 pub async fn create_user_agreement_use_case<
     R: TermRepository + UserAgreementRepository,
     C: CacheService,
