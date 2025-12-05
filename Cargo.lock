@@ -4033,6 +4033,7 @@ dependencies = [
  "aws-sdk-s3",
  "chrono",
  "deadpool-redis",
+ "dotenvy",
  "migration",
  "sea-orm",
  "serde",
