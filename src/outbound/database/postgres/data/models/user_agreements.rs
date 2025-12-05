@@ -8,7 +8,9 @@ use sea_orm::entity::prelude::*;
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
+    #[sea_orm(unique_key = "idx_user_agreements_user_term")]
     pub term_of_use_id: i32,
+    #[sea_orm(unique_key = "idx_user_agreements_user_term")]
     pub user_id: i32,
     pub agreed_at: DateTime,
     #[sea_orm(

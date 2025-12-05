@@ -9,6 +9,7 @@ const TABLE_USER_AGREEMENTS: &str = "user_agreements";
 const INDEX_TERMS_GROUP_VERSION: &str = "idx_terms_group_version";
 
 const FK_USER_AGREEMENTS_TERM_OF_USE_ID: &str = "fk-user_agreements-term_of_use_id";
+const INDEX_USER_AGREEMENTS_USER_TERM: &str = "idx_user_agreements_user_term";
 
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
@@ -49,6 +50,13 @@ impl MigrationTrait for Migration {
                             .name(FK_USER_AGREEMENTS_TERM_OF_USE_ID)
                             .from(TABLE_USER_AGREEMENTS, "term_of_use_id")
                             .to(TABLE_TERMS, "id"),
+                    )
+                    .index(
+                        Index::create()
+                            .unique()
+                            .name(INDEX_USER_AGREEMENTS_USER_TERM)
+                            .col("user_id")
+                            .col("term_of_use_id"),
                     )
                     .to_owned(),
             )
