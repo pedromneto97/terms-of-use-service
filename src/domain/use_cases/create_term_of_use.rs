@@ -19,6 +19,7 @@ pub async fn create_term_of_use_use_case(
     cache_service: &impl CacheService,
     term: CreateTermOfUseDTO,
     file_path: &Path,
+    content_type: &str,
 ) -> Result<TermOfUse, TermsOfUseError> {
     let latest_term = repository.get_latest_term_for_group(&term.group).await?;
     let next_version = match latest_term {
@@ -26,7 +27,7 @@ pub async fn create_term_of_use_use_case(
         None => 1,
     };
 
-    let uploaded_file = upload_service.upload_file(file_path).await?;
+    let uploaded_file = upload_service.upload_file(file_path, content_type).await?;
 
     let new_term = TermOfUse {
         id: 0,

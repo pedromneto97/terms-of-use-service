@@ -17,11 +17,21 @@ pub async fn start_server(config: Config) -> std::io::Result<()> {
         .expect("PORT must be a valid u16 number");
 
     HttpServer::new(move || {
-        App::new()
+        let app = App::new()
             .wrap(Logger::default())
             .wrap(Compress::default())
             .app_data(Data::new(config.clone()))
-            .configure(v1::controller::configure)
+            .configure(v1::controller::configure);
+
+        #[cfg(feature = "otel")]
+        let app = {
+            use actix_web_opentelemetry::{RequestMetrics, RequestTracing};
+
+            app.wrap(RequestTracing::new())
+                .wrap(RequestMetrics::default())
+        };
+
+        app
     })
     .bind((host.as_str(), port))?
     .run()

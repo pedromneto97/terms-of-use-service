@@ -2,10 +2,9 @@ use std::path::Path;
 
 use aws_config::BehaviorVersion;
 use aws_sdk_s3::primitives::ByteStream;
+use tracing::error;
 
 use crate::domain::{data::service::StorageService, errors::TermsOfUseError};
-
-use tracing::error;
 
 #[derive(Clone, Debug)]
 pub struct StorageConfig {
@@ -29,17 +28,24 @@ impl StorageConfig {
 }
 
 impl StorageService for StorageConfig {
-    async fn upload_file(&self, path: &Path) -> Result<String, TermsOfUseError> {
+    async fn upload_file(
+        &self,
+        path: &Path,
+        content_type: &str,
+    ) -> Result<String, TermsOfUseError> {
         let body = ByteStream::from_path(path).await.map_err(|err| {
             error!("Failed to read file for upload: {err}");
 
             TermsOfUseError::InternalServerError
         })?;
 
-        let file_extension = path
-            .extension()
-            .and_then(|ext| ext.to_str())
-            .ok_or(TermsOfUseError::InternalServerError)?;
+        let file_extension =
+            path.extension()
+                .and_then(|ext| ext.to_str())
+                .unwrap_or(match content_type {
+                    "application/pdf" => "pdf",
+                    _ => "",
+                });
 
         let key = format!("{}.{file_extension}", uuid::Uuid::new_v4());
 
@@ -48,6 +54,7 @@ impl StorageService for StorageConfig {
             .bucket(&self.bucket_name)
             .key(&key)
             .body(body)
+            .content_type(content_type)
             .send()
             .await
             .map_err(|err| {

@@ -66,12 +66,24 @@ async fn create_term_of_use(
 ) -> Result<HttpResponse, ProblemDetails> {
     let CreateTermForm { file, data } = body;
 
+    let content_type = file
+        .content_type
+        .map(|ct| ct.to_string())
+        .unwrap_or_default();
+
+    if content_type.is_empty() || content_type != "application/pdf" {
+        return Err(
+            ProblemDetails::bad_request().with_detail("Term of use file must be a valid PDF")
+        );
+    }
+
     create_term_of_use_use_case(
         &config.repository,
         &config.storage,
         &config.cache,
         data.into_inner().into(),
         file.file.path(),
+        &content_type,
     )
     .await?;
 
