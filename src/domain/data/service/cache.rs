@@ -1,6 +1,6 @@
 use crate::domain::{entities::TermOfUse, errors::TermsOfUseError};
 
-pub trait CacheService {
+pub trait CacheService: Send + Sync {
     async fn find_user_agreement(
         &self,
         user_id: i32,

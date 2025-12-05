@@ -1,6 +1,6 @@
 use crate::domain::{entities::TermOfUse, errors::TermsOfUseError};
 
-pub trait TermRepository {
+pub trait TermRepository: Send + Sync {
     async fn get_latest_term_for_group(
         &self,
         group: &str,
@@ -11,7 +11,7 @@ pub trait TermRepository {
     async fn create_term(&self, term: TermOfUse) -> Result<TermOfUse, TermsOfUseError>;
 }
 
-pub trait UserAgreementRepository {
+pub trait UserAgreementRepository: Send + Sync {
     async fn has_user_agreed_to_term(
         &self,
         user_id: i32,
