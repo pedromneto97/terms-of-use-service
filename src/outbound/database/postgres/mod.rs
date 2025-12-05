@@ -3,6 +3,7 @@ use sea_orm::{Database, DatabaseConnection};
 
 mod data;
 
+#[derive(Clone, Debug)]
 pub struct PostgresRepository {
     pub db: DatabaseConnection,
 }
