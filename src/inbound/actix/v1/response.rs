@@ -33,6 +33,7 @@ impl From<TermOfUse> for TermOfUseResponse {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct HasConsentedResponse {
     pub has_consented: bool,
 }
