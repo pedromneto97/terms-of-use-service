@@ -2537,7 +2537,7 @@ version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7957b9740744892f114936ab4a57b3f487491bbeafaf8083688b16841a4240e5"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -2645,13 +2645,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "opentelemetry-appender-log"
-version = "0.31.0"
+name = "opentelemetry-appender-tracing"
+version = "0.31.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e50c59a96bd6a723a4329c5db31eb04fa4488c5f141ae7b9d4fd587439e6ee1"
+checksum = "ef6a1ac5ca3accf562b8c306fa8483c85f4390f768185ab775f242f7fe8fdcc2"
 dependencies = [
- "log",
  "opentelemetry",
+ "tracing",
+ "tracing-core",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -4276,10 +4278,9 @@ dependencies = [
  "chrono",
  "deadpool-redis",
  "dotenvy",
- "log",
  "migration",
  "opentelemetry",
- "opentelemetry-appender-log",
+ "opentelemetry-appender-tracing",
  "opentelemetry-instrumentation-actix-web",
  "opentelemetry-otlp",
  "opentelemetry_sdk",
@@ -4644,6 +4645,7 @@ dependencies = [
  "thread_local",
  "tracing",
  "tracing-core",
+ "tracing-log",
 ]
 
 [[package]]

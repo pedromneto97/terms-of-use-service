@@ -1,6 +1,6 @@
 use chrono::Utc;
-use log::error;
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter};
+use tracing::error;
 
 use crate::{
     domain::{data::repository::UserAgreementRepository, errors::TermsOfUseError},

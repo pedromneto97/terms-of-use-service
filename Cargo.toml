@@ -19,9 +19,8 @@ aws-sdk-s3 = { version = "1.116.0", optional = true }
 chrono = { version = "0.4", features = ["serde"] }
 deadpool-redis = { version = "0.22.0", optional = true }
 dotenvy = "0.15.7"
-log = "0.4.29"
 opentelemetry = { version = "0.31", optional = true }
-opentelemetry-appender-log = { version = "0.31.0", optional = true }
+opentelemetry-appender-tracing = { version = "0.31.0", optional = true }
 opentelemetry-instrumentation-actix-web = { version = "0.23.0", features = [
     "metrics",
 ], optional = true }
@@ -36,10 +35,7 @@ opentelemetry-otlp = { version = "0.31", features = [
 tracing = { version = "0.1" }
 tracing-subscriber = { version = "0.3", features = [
     "env-filter",
-    "std",
-    "ansi",
-    "smallvec",
-], optional = true, default-features = false }
+], optional = true }
 tracing-opentelemetry = { version = "0.32", optional = true }
 migration = { path = "migration", optional = true }
 sea-orm = { version = "~2.0.0-rc.20", features = [
@@ -69,7 +65,7 @@ otel = [
     "tracing-subscriber",
     "tracing-opentelemetry",
     "opentelemetry-instrumentation-actix-web",
-    "opentelemetry-appender-log",
+    "opentelemetry-appender-tracing",
 ]
 
 

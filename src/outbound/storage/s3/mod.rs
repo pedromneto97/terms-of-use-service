@@ -2,7 +2,7 @@ use std::path::Path;
 
 use aws_config::BehaviorVersion;
 use aws_sdk_s3::primitives::ByteStream;
-use log::error;
+use tracing::error;
 
 use crate::domain::{data::service::StorageService, errors::TermsOfUseError};
 
@@ -14,7 +14,16 @@ pub struct StorageConfig {
 
 impl StorageConfig {
     pub async fn new() -> Self {
-        let config = aws_config::defaults(BehaviorVersion::latest()).load().await;
+        let config_builder = aws_config::defaults(BehaviorVersion::latest());
+
+        let endpoint_url = std::env::var("AWS_ENDPOINT_URL").ok();
+
+        let config = if let Some(url) = endpoint_url {
+            config_builder.endpoint_url(url).load().await
+        } else {
+            config_builder.load().await
+        };
+
         let bucket_name =
             std::env::var("S3_BUCKET_NAME").expect("S3_BUCKET_NAME must be set in env vars");
 

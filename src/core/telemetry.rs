@@ -1,7 +1,6 @@
-use log::LevelFilter;
 use opentelemetry::global;
 use opentelemetry::trace::TracerProvider;
-use opentelemetry_appender_log::OpenTelemetryLogBridge;
+use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::logs::{BatchLogProcessor, SdkLoggerProvider};
 use opentelemetry_sdk::{Resource, metrics::SdkMeterProvider, trace::SdkTracerProvider};
@@ -34,20 +33,17 @@ fn setup_logger(resource: Resource, otel_endpoint: &str) -> SdkLoggerProvider {
         .build()
         .expect("Failed to create OTLP log exporter");
 
-    let logger_provider = SdkLoggerProvider::builder()
+    SdkLoggerProvider::builder()
         .with_resource(resource)
         .with_log_processor(BatchLogProcessor::builder(log_exporter).build())
-        .build();
-
-    let otel_log_appender = OpenTelemetryLogBridge::new(&logger_provider);
-    log::set_boxed_logger(Box::new(otel_log_appender))
-        .expect("Failed to set OpenTelemetry log appender");
-    log::set_max_level(LevelFilter::Info);
-
-    logger_provider
+        .build()
 }
 
-fn setup_tracer(resource: Resource, otel_endpoint: &str) -> SdkTracerProvider {
+fn setup_tracer(
+    resource: Resource,
+    otel_endpoint: &str,
+    logger_provider: &SdkLoggerProvider,
+) -> SdkTracerProvider {
     let span_exporter = opentelemetry_otlp::SpanExporter::builder()
         .with_tonic()
         .with_endpoint(otel_endpoint)
@@ -63,6 +59,8 @@ fn setup_tracer(resource: Resource, otel_endpoint: &str) -> SdkTracerProvider {
 
     let telemetry_layer = tracing_opentelemetry::layer().with_tracer(tracer);
 
+    let otel_logs_layer = OpenTelemetryTracingBridge::new(logger_provider);
+
     let fmt_layer = tracing_subscriber::fmt::layer()
         .with_target(true)
         .with_level(true);
@@ -74,6 +72,7 @@ fn setup_tracer(resource: Resource, otel_endpoint: &str) -> SdkTracerProvider {
         .with(env_filter)
         .with(fmt_layer)
         .with(telemetry_layer)
+        .with(otel_logs_layer)
         .init();
 
     tracer_provider
@@ -107,7 +106,7 @@ pub fn init_telemetry() -> OtelSdk {
         .build();
 
     let logger_provider = setup_logger(resource.clone(), &otel_endpoint);
-    let tracer_provider = setup_tracer(resource.clone(), &otel_endpoint);
+    let tracer_provider = setup_tracer(resource.clone(), &otel_endpoint, &logger_provider);
     let meter_provider = setup_meter(resource, &otel_endpoint);
 
     OtelSdk {
