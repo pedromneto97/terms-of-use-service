@@ -1,5 +1,5 @@
+use log::error;
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
-use tracing::error;
 
 use crate::{
     domain::{data::repository::TermRepository, entities::TermOfUse, errors::TermsOfUseError},

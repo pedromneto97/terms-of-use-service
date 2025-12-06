@@ -25,7 +25,7 @@ pub async fn start_server(config: Config) -> std::io::Result<()> {
 
         #[cfg(feature = "otel")]
         let app = {
-            use actix_web_opentelemetry::{RequestMetrics, RequestTracing};
+            use opentelemetry_instrumentation_actix_web::{RequestMetrics, RequestTracing};
 
             app.wrap(RequestTracing::new())
                 .wrap(RequestMetrics::default())

@@ -2,7 +2,7 @@ use std::path::Path;
 
 use aws_config::BehaviorVersion;
 use aws_sdk_s3::primitives::ByteStream;
-use tracing::error;
+use log::error;
 
 use crate::domain::{data::service::StorageService, errors::TermsOfUseError};
 

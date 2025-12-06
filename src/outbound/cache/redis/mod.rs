@@ -1,5 +1,5 @@
 use deadpool_redis::{Connection, Runtime, redis::AsyncCommands};
-use tracing::error;
+use log::error;
 
 use crate::domain::{data::service::CacheService, entities::TermOfUse, errors::TermsOfUseError};
 
