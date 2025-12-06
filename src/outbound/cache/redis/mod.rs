@@ -1,4 +1,7 @@
-use deadpool_redis::{Connection, Runtime, redis::AsyncCommands};
+use deadpool_redis::{
+    Connection, Runtime,
+    redis::{AsyncCommands, pipe},
+};
 use tracing::error;
 
 use crate::domain::{data::service::CacheService, entities::TermOfUse, errors::TermsOfUseError};
@@ -138,13 +141,28 @@ impl CacheService for RedisConfig {
     async fn invalidate_cache_for_group(&self, group: &str) -> Result<(), TermsOfUseError> {
         let mut conn = self.get_connection().await?;
 
-        let keys = [
-            format!("{LATEST_TERMS_PREFIX}{group}"),
-            format!("{USER_AGREEMENTS_PREFIX}{group}:*"),
-        ];
+        let mut pipe = pipe();
+        pipe.atomic();
 
-        conn.del::<&[String], ()>(&keys).await.map_err(|err| {
-            error!("Failed to invalidate cache for group {group}: {err}");
+        let mut keys = conn
+            .scan_match::<String, String>(format!("{USER_AGREEMENTS_PREFIX}{group}:*"))
+            .await
+            .map_err(|err| {
+                error!("Failed to scan keys for cache invalidation: {err}");
+
+                TermsOfUseError::InternalServerError
+            })?;
+
+        while let Some(key) = keys.next_item().await {
+            pipe.unlink(key).ignore();
+        }
+        drop(keys);
+
+        pipe.unlink(format!("{LATEST_TERMS_PREFIX}{group}"))
+            .ignore();
+
+        pipe.query_async::<()>(&mut conn).await.map_err(|err| {
+            error!("Failed to invalidate cache for group: {err}");
 
             TermsOfUseError::InternalServerError
         })
