@@ -9,12 +9,7 @@ members = ["migration"]
 [dependencies]
 actix-multipart = { version = "0.7.2", optional = true }
 actix-web = { version = "4", optional = true }
-aws-config = { version = "1.8", optional = true, features = [
-    "credentials-login",
-] }
-aws-credential-types = { version = "1.2", features = [
-    "hardcoded-credentials",
-], optional = true }
+aws-config = { version = "1.8", optional = true }
 aws-sdk-s3 = { version = "1.116.0", optional = true }
 chrono = { version = "0.4", features = ["serde"] }
 deadpool-redis = { version = "0.22.0", optional = true }
@@ -51,12 +46,7 @@ uuid = { version = "1.19.0", optional = true, features = ["v4"] }
 postgres = ["dep:sea-orm", "sea-orm/sqlx-postgres", "dep:migration"]
 actix-web = ["dep:actix-web", "dep:serde", "dep:actix-multipart"]
 cache = []
-s3 = [
-    "dep:aws-config",
-    "dep:aws-credential-types",
-    "dep:uuid",
-    "dep:aws-sdk-s3",
-]
+s3 = ["aws-config", "uuid", "aws-sdk-s3"]
 redis = ["dep:deadpool-redis", "dep:serde_json", "dep:serde", "cache"]
 otel = [
     "opentelemetry",

@@ -20,9 +20,7 @@ services:
       - AWS_ACCESS_KEY_ID=fake
       - AWS_SECRET_ACCESS_KEY=fake
       - AWS_DEFAULT_REGION=us-east-1
-      - DEFAULT_REGION=us-east-1
       - AWS_DEFAULT_OUTPUT=json
-      - EDGE_PORT=4566
     ports:
       - "4566:4566"
     volumes:
