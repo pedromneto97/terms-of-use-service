@@ -35,6 +35,9 @@ Example: `cargo build --features "actix-web,postgres,s3"`
 - **Use cases orchestrate logic**: See `src/domain/use_cases/` for business flows
 - **Config wiring**: `src/core/config/` selects implementations based on features
 
+## Telemetry
+Observability and tracing are configured via the `src/core/telemetry.rs` module. Instrumentation is integrated into the project and can be enabled as needed. Details about configuration, integration, and usage are provided in the layer-specific instructions files.
+
 ## Layer-Specific Instructions
 See detailed instructions for each layer:
 - `.github/instructions/inbound.instructions.md` — API layer (Actix, Tonic)
