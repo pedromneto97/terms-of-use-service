@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package terms_of_use;
+
+message CreateTermRequest {
+  message CreateTermData {
+    string group = 1;
+    optional string info = 2;
+    string content_type = 3;
+    uint64 content_size = 4;
+  }
+
+  oneof create_term_content {
+    CreateTermData data = 1;
+    bytes chunk = 2;
+  }
+}

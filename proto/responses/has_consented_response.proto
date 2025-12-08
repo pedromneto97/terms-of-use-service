@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package terms_of_use;
+
+message HasConsentResponse {
+  bool has_consented = 1;
+}

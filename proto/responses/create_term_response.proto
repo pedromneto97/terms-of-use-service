@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package terms_of_use;
+
+message CreateTermResponse {
+  int32 id = 1;
+  string group = 2;
+  string url = 3;
+  optional string info = 4;
+}

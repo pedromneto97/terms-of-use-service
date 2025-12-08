@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use dotenvy::dotenv;
 
 mod core;
@@ -6,7 +8,7 @@ mod inbound;
 mod outbound;
 
 #[tokio::main]
-async fn main() -> std::io::Result<()> {
+async fn main() -> Result<(), impl Error> {
     dotenv().ok();
 
     #[cfg(feature = "otel")]

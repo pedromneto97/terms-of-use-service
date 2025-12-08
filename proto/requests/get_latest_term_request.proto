@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package terms_of_use;
+
+message GetLatestTermsRequest {
+  string group = 1;
+  bool only_url = 2;
+}

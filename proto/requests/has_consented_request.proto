@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package terms_of_use;
+
+message HasConsentedRequest {
+  int32 user_id = 1;
+  string group = 2;
+}

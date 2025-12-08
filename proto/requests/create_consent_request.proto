@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package terms_of_use;
+
+message CreateConsentRequest {
+  int32 user_id = 1;
+  int32 term_id = 2;
+}

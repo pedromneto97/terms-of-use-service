@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package terms_of_use;
+
+message GetLatestTermsResponse {
+  message TermContent {
+    int32 id = 1;
+    string group = 2;
+    string url = 3;
+    optional string info = 4;
+  }
+
+  oneof term_of_use_content {
+    TermContent term = 1;
+    string url = 2;
+  }
+}

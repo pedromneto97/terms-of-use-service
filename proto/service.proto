@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package terms_of_use;
+
+import "google/protobuf/empty.proto";
+
+import "requests/create_consent_request.proto";
+import "requests/get_latest_term_request.proto";
+import "requests/has_consented_request.proto";
+import "requests/create_term_request.proto";
+
+import "responses/has_consented_response.proto";
+import "responses/get_latest_term_response.proto";
+import "responses/create_term_response.proto";
+
+service TermsOfUseService {
+  rpc HasConsent(HasConsentedRequest) returns (HasConsentResponse);
+
+  rpc GetLatestTerms(GetLatestTermsRequest) returns (GetLatestTermsResponse);
+
+  rpc CreateConsent(CreateConsentRequest) returns (google.protobuf.Empty);
+
+  rpc CreateTerm(stream CreateTermRequest) returns (CreateTermResponse);
+}
