@@ -75,13 +75,13 @@ Before building, decide which adapters you need. You must select exactly **one f
 | Adapter     | Status | Feature      | Best For |
 |:-----------:|:------:|:------------:|----------|
 | Actix-web   | ✅     | `actix-web`  | HTTP REST APIs, traditional web apps |
-| Tonic (gRPC)| ❌     | `tonic`      | High-performance gRPC services |
+| Tonic (gRPC)| ✅     | `grpc`      | High-performance gRPC services |
 
 ### Storage Layer
 | Adapter     | Status | Feature   | Best For |
 |:-----------:|:------:|:---------:|----------|
 | S3          | ✅     | `s3`      | AWS object storage |
-| Google      | ❌     | `google`  | Google Cloud Storage |
+| Google      | ✅     | `gcloud`  | Google Cloud Storage |
 
 **Note:** Status shows currently available adapters. Choose one feature flag from each layer.
 
@@ -99,11 +99,11 @@ Each adapter has its own configuration guide with environment variables and setu
 
 **Storage:**
 - [S3 Setup](docs/s3.md) - AWS object storage
-- [Google Cloud Storage Setup](docs/google.md) - GCS buckets
+- [Google Cloud Storage Setup](docs/google_cloud_storage.md) - GCS buckets
 
 **API:**
 - [Actix-web Setup](docs/actix-web.md) - HTTP REST API
-- [Tonic (gRPC) Setup](docs/tonic.md) - gRPC services
+- [Tonic (gRPC) Setup](docs/grpc.md) - gRPC services
 
 ## 📡 Observability
 
