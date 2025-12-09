@@ -50,6 +50,7 @@ init-tracing-opentelemetry = { version = "0.34.0", features = [
     "metrics",
     "tracing_subscriber_ext",
 ], optional = true }
+google-cloud-storage = { version = "1.4", optional = true }
 
 
 [build-dependencies]
@@ -85,6 +86,7 @@ grpc = [
     "uuid",
     "tokio/fs",
 ]
+gcloud = ["google-cloud-storage", "uuid", "tokio/fs"]
 
 [profile.release]
 lto = true
