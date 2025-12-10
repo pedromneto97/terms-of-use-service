@@ -44,6 +44,10 @@ export S3_BUCKET=my-bucket
 export AWS_ACCOUNT_ID=123456789012
 export SNS_TOPIC_NAME=terms-agreements
 
+# Publisher (Kafka example - optional)
+export KAFKA_BROKERS=localhost:9092
+export KAFKA_TOPIC=terms-of-use-agreements
+
 # API
 export API_HOST=0.0.0.0
 export API_PORT=8080
@@ -98,6 +102,7 @@ Before building, decide which adapters you need. Select **one from each required
 | Adapter     | Status | Feature   | Best For |
 |:-----------:|:------:|:---------:|----------|
 | SNS         | ✅     | `sns`     | AWS event publishing, event-driven architectures |
+| Kafka       | ✅     | `kafka`   | High-throughput message streaming, event sourcing |
 | None        | ✅     | -         | No-op publisher (default if no publisher feature enabled) |
 
 **Note:** Status shows currently available adapters. Cache and Publisher layers are optional and default to no-op implementations when not configured.
@@ -120,6 +125,7 @@ Each adapter has its own configuration guide with environment variables and setu
 
 **Publisher:**
 - [SNS Setup](docs/sns.md) - AWS event publishing
+- [Kafka Setup](docs/kafka.md) - Message streaming platform
 
 **API:**
 - [Actix-web Setup](docs/actix-web.md) - HTTP REST API

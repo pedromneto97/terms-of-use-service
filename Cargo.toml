@@ -53,6 +53,7 @@ init-tracing-opentelemetry = { version = "0.34.0", features = [
     "tracing_subscriber_ext",
 ], optional = true }
 google-cloud-storage = { version = "1.5", optional = true }
+rdkafka = { version = "0.38", optional = true }
 
 
 [build-dependencies]
@@ -60,11 +61,30 @@ tonic-prost-build = { version = "0.14", optional = true }
 
 
 [features]
-postgres = ["dep:sea-orm", "sea-orm/sqlx-postgres", "dep:migration"]
+# Web server
 actix-web = ["dep:actix-web", "dep:serde", "dep:actix-multipart"]
+grpc = [
+    "tonic",
+    "prost",
+    "tonic-prost-build",
+    "tonic-prost",
+    "uuid",
+    "tokio/fs",
+]
+
+# Databases
+postgres = ["dep:sea-orm", "sea-orm/sqlx-postgres", "dep:migration"]
+dynamodb = ["aws-sdk-dynamodb", "aws-config"]
+
+# Cache
 cache = []
-s3 = ["aws-config", "uuid", "aws-sdk-s3"]
 redis = ["dep:deadpool-redis", "dep:serde_json", "dep:serde", "cache"]
+
+# Storage
+gcloud = ["google-cloud-storage", "uuid", "tokio/fs"]
+s3 = ["aws-config", "uuid", "aws-sdk-s3"]
+
+# OpenTelemetry
 otel = [
     "opentelemetry",
     "opentelemetry_sdk",
@@ -76,18 +96,13 @@ otel = [
     "init-tracing-opentelemetry",
     "tonic-tracing-opentelemetry",
 ]
-grpc = [
-    "tonic",
-    "prost",
-    "tonic-prost-build",
-    "tonic-prost",
-    "uuid",
-    "tokio/fs",
-]
-gcloud = ["google-cloud-storage", "uuid", "tokio/fs"]
-dynamodb = ["aws-sdk-dynamodb", "aws-config"]
-publisher = ["dep:serde"]
-sns = ["aws-sdk-sns", "publisher", "aws-config", "dep:serde_json"]
+
+# Publishers
+publisher = ["dep:serde", "dep:serde_json"]
+sns = ["aws-sdk-sns", "publisher", "aws-config"]
+kafka = ["rdkafka", "publisher"]
+
+# Stack
 aws = ["s3", "dynamodb", "sns"]
 
 [profile.release]
