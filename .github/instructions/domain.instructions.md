@@ -13,8 +13,13 @@ src/domain/
 ├── dto.rs           # Data transfer objects for use cases
 ├── errors.rs        # Domain error types
 ├── data/
+│   ├── mod.rs
 │   ├── repository.rs  # Repository traits (TermRepository, UserAgreementRepository)
-│   └── service/       # Service traits (CacheService, StorageService)
+│   └── service/       # Service traits (CacheService, StorageService, PublisherService)
+│       ├── mod.rs
+│       ├── cache.rs
+│       ├── storage.rs
+│       └── publisher.rs
 └── use_cases/         # Business logic orchestration
 ```
 
@@ -26,8 +31,14 @@ Outbound adapters must implement these traits:
 - `UserAgreementRepository`: `has_user_agreed_to_term`, `create_user_agreement`
 
 ### Service Traits (`data/service/`)
-- `CacheService`: Cache operations for terms and agreements (has `NoopCacheService` default)
-- `StorageService`: File upload/delete/URL operations
+- `CacheService` (`cache.rs`): Cache operations for terms and agreements
+  - Methods: `find_user_agreement`, `store_user_agreement`, `get_latest_term_for_group`, `store_latest_term_for_group`, `invalidate_cache_for_group`
+  - Default implementation: `NoopCacheService` when no cache feature is enabled
+- `StorageService` (`storage.rs`): File upload/delete/URL operations
+  - Methods: `upload_file`, `delete_file`, `get_file_url`
+- `PublisherService` (`publisher.rs`): Event publishing for user agreements
+  - Methods: `publish_agreement`
+  - Default implementation: `NoopPublisherService` when no publisher feature is enabled
 
 ## Adding a New Use Case
 1. Create file in `src/domain/use_cases/` (e.g., `revoke_agreement.rs`)

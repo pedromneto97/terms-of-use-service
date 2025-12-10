@@ -87,6 +87,7 @@ impl TermsOfUseService for GrpcService {
         create_user_agreement_use_case(
             &self.config.repository,
             &self.config.cache,
+            &self.config.publisher,
             request.user_id,
             request.term_id,
         )

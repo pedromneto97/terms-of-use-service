@@ -547,6 +547,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "aws-sdk-sns"
+version = "1.92.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "437f210ef76b0b782f6e1197006078142cb9221ae238c43e92f1ae592afd27bc"
+dependencies = [
+ "aws-credential-types",
+ "aws-runtime",
+ "aws-smithy-async",
+ "aws-smithy-http",
+ "aws-smithy-json",
+ "aws-smithy-query",
+ "aws-smithy-runtime",
+ "aws-smithy-runtime-api",
+ "aws-smithy-types",
+ "aws-smithy-xml",
+ "aws-types",
+ "fastrand",
+ "http 0.2.12",
+ "regex-lite",
+ "tracing",
+]
+
+[[package]]
 name = "aws-sdk-sso"
 version = "1.91.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2031,9 +2054,9 @@ dependencies = [
 
 [[package]]
 name = "google-cloud-storage"
-version = "1.4.0"
+version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "931b69ac5996d0216e74e22e1843e025bef605ba8c062003d40c1565d90594b4"
+checksum = "043be824d1b105bfdce786c720e45cae04e66436f8e5d0168e98ca8e5715ce9f"
 dependencies = [
  "async-trait",
  "base64",
@@ -4775,6 +4798,7 @@ dependencies = [
  "aws-config",
  "aws-sdk-dynamodb",
  "aws-sdk-s3",
+ "aws-sdk-sns",
  "chrono",
  "deadpool-redis",
  "dotenvy",

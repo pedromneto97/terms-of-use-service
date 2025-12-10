@@ -53,7 +53,14 @@ async fn create_agreement(
 ) -> Result<HttpResponse, ProblemDetails> {
     let CreateAgreementPayload { user_id, term_id } = body.into_inner();
 
-    create_user_agreement_use_case(&config.repository, &config.cache, user_id, term_id).await?;
+    create_user_agreement_use_case(
+        &config.repository,
+        &config.cache,
+        &config.publisher,
+        user_id,
+        term_id,
+    )
+    .await?;
 
     Ok(HttpResponse::Created().finish())
 }

@@ -15,12 +15,13 @@ services:
   localstack:
     image: localstack/localstack:latest
     environment:
-      - SERVICES=s3,dynamodb
+      - SERVICES=s3,dynamodb,sns
       - DATA_DIR=/var/lib/localstack/data
       - AWS_ACCESS_KEY_ID=fake
       - AWS_SECRET_ACCESS_KEY=fake
       - AWS_DEFAULT_REGION=us-east-1
       - AWS_DEFAULT_OUTPUT=json
+      - AWS_ACCOUNT_ID=000000000000
     ports:
       - "4566:4566"
     volumes:

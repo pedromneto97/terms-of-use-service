@@ -31,7 +31,7 @@ Example: `cargo build --features "actix-web,postgres,s3"`
 - **Local AWS**: `./localstack/setup-aws.sh`
 
 ## Key Patterns
-- **Trait-based abstractions**: All outbound adapters implement domain traits (`TermRepository`, `CacheService`, `StorageService`)
+- **Trait-based abstractions**: All outbound adapters implement domain traits (`TermRepository`, `CacheService`, `StorageService`, `PublisherService`)
 - **Use cases orchestrate logic**: See `src/domain/use_cases/` for business flows
 - **Config wiring**: `src/core/config/` selects implementations based on features
 

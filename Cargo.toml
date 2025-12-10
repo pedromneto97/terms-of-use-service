@@ -12,6 +12,7 @@ actix-web = { version = "4", optional = true }
 aws-config = { version = "1.8", optional = true }
 aws-sdk-dynamodb = { version = "1.101", optional = true }
 aws-sdk-s3 = { version = "1.117", optional = true }
+aws-sdk-sns = { version = "1.92", optional = true }
 chrono = { version = "0.4", features = ["serde"] }
 deadpool-redis = { version = "0.22.0", optional = true }
 dotenvy = "0.15.7"
@@ -51,15 +52,11 @@ init-tracing-opentelemetry = { version = "0.34.0", features = [
     "metrics",
     "tracing_subscriber_ext",
 ], optional = true }
-google-cloud-storage = { version = "1.4", optional = true }
+google-cloud-storage = { version = "1.5", optional = true }
 
 
 [build-dependencies]
 tonic-prost-build = { version = "0.14", optional = true }
-
-
-[dev-dependencies]
-serde_json = "1.0.145"
 
 
 [features]
@@ -89,6 +86,8 @@ grpc = [
 ]
 gcloud = ["google-cloud-storage", "uuid", "tokio/fs"]
 dynamodb = ["aws-sdk-dynamodb", "aws-config"]
+publisher = ["dep:serde"]
+sns = ["aws-sdk-sns", "publisher", "aws-config", "dep:serde_json"]
 
 [profile.release]
 lto = true
