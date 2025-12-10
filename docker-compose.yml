@@ -15,7 +15,7 @@ services:
   localstack:
     image: localstack/localstack:latest
     environment:
-      - SERVICES=s3
+      - SERVICES=s3,dynamodb
       - DATA_DIR=/var/lib/localstack/data
       - AWS_ACCESS_KEY_ID=fake
       - AWS_SECRET_ACCESS_KEY=fake

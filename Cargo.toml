@@ -10,7 +10,8 @@ members = ["migration"]
 actix-multipart = { version = "0.7.2", optional = true }
 actix-web = { version = "4", optional = true }
 aws-config = { version = "1.8", optional = true }
-aws-sdk-s3 = { version = "1.116.0", optional = true }
+aws-sdk-dynamodb = { version = "1.101", optional = true }
+aws-sdk-s3 = { version = "1.117", optional = true }
 chrono = { version = "0.4", features = ["serde"] }
 deadpool-redis = { version = "0.22.0", optional = true }
 dotenvy = "0.15.7"
@@ -39,7 +40,7 @@ sea-orm = { version = "~2.0.0-rc.20", features = [
 ], optional = true, default-features = false }
 serde = { version = "1", features = ["derive"], optional = true }
 serde_json = { version = "1.0.145", optional = true }
-tokio = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 uuid = { version = "1.19.0", optional = true, features = ["v4"] }
 tonic = { version = "0.14", features = ["zstd"], optional = true }
 prost = { version = "0.14", optional = true }
@@ -87,6 +88,7 @@ grpc = [
     "tokio/fs",
 ]
 gcloud = ["google-cloud-storage", "uuid", "tokio/fs"]
+dynamodb = ["aws-sdk-dynamodb", "aws-config"]
 
 [profile.release]
 lto = true

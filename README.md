@@ -46,7 +46,12 @@ export API_PORT=8080
 
 ### Run the Service
 ```bash
-cargo run --features "actix-web,postgres,s3"
+cargo run --features "actix-web,postgres,s3,otel"
+```
+
+#### Example for AWS Stack
+```bash
+cargo run --features "actix-web,dynamodb,s3,otel,redis"
 ```
 
 The service will start on `http://0.0.0.0:8080`.
@@ -63,7 +68,7 @@ Before building, decide which adapters you need. You must select exactly **one f
 | Adapter    | Status | Feature | Best For |
 |:----------:|:------:|:-------:|----------|
 | Postgres   | ✅     | `postgres` | Traditional relational databases, complex queries |
-| DynamoDB   | ❌     | `dynamodb` | Serverless, auto-scaling, AWS-native |
+| DynamoDB   | ✅     | `dynamodb` | Serverless, auto-scaling, AWS-native |
 
 ### Cache Layer
 | Adapter    | Status | Feature | Best For |
