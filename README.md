@@ -56,7 +56,7 @@ cargo run --features "actix-web,postgres,s3,otel"
 
 #### Example for AWS Stack
 ```bash
-cargo run --features "actix-web,dynamodb,s3,sns,redis,otel"
+cargo run --features "actix-web,aws,redis,otel"
 ```
 
 The service will start on `http://0.0.0.0:8080`.
