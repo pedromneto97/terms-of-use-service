@@ -43,10 +43,6 @@ impl SNSPublisher {
 impl PublisherService for SNSPublisher {
     #[tracing::instrument(skip(self, dto))]
     async fn publish_agreement(&self, dto: AcceptedTermOfUseDTO) -> Result<(), TermsOfUseError> {
-        let message = format!(
-            "User with ID {} has agreed to term ID {} in group '{}'",
-            dto.user_id, dto.term_id, dto.group
-        );
         let json = serde_json::to_string(&dto).map_err(|err| {
             error!("Failed to serialize AcceptedTermOfUseDTO: {err}");
 
@@ -56,7 +52,7 @@ impl PublisherService for SNSPublisher {
         self.client
             .publish()
             .topic_arn(&self.topic_arn)
-            .message(message)
+            .message(json)
             .send()
             .await
             .map_err(|err| {
