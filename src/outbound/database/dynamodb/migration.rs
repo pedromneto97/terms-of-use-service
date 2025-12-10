@@ -2,17 +2,15 @@ use aws_sdk_dynamodb::types::{
     AttributeDefinition, BillingMode, GlobalSecondaryIndex, KeySchemaElement, KeyType, Projection,
     ProjectionType, ScalarAttributeType,
 };
+use domain::errors::{Result, TermsOfUseError};
 use tracing::{error, info};
 
-use crate::{
-    domain::errors::TermsOfUseError,
-    outbound::database::dynamodb::model::{TERMS_TABLE, USER_AGREEMENTS_TABLE},
-};
+use crate::outbound::database::dynamodb::model::{TERMS_TABLE, USER_AGREEMENTS_TABLE};
 
 pub const GSI_TERMS_GROUP_VERSION: &str = "gsi_group_version";
 pub const COUNTERS_TABLE: &str = "counters";
 
-pub async fn run_migrations(client: &aws_sdk_dynamodb::Client) -> Result<(), TermsOfUseError> {
+pub async fn run_migrations(client: &aws_sdk_dynamodb::Client) -> Result<()> {
     create_counters_table(client).await?;
     create_terms_table(client).await?;
     create_user_agreements_table(client).await?;
@@ -32,7 +30,7 @@ async fn table_exists(client: &aws_sdk_dynamodb::Client, table_name: &str) -> bo
 /// Creates the `terms` table with:
 /// - Primary key: `id` (Number)
 /// - Global secondary index `gsi_group_version`: partition key `group` (String), sort key `version` (Number)
-async fn create_terms_table(client: &aws_sdk_dynamodb::Client) -> Result<(), TermsOfUseError> {
+async fn create_terms_table(client: &aws_sdk_dynamodb::Client) -> Result<()> {
     if table_exists(client, TERMS_TABLE).await {
         info!("Table '{TERMS_TABLE}' already exists, skipping creation");
 
@@ -86,9 +84,7 @@ async fn create_terms_table(client: &aws_sdk_dynamodb::Client) -> Result<(), Ter
 /// Creates the `user_agreements` table with:
 /// - Primary key: `agreement_key` (String) - Format: "{user_id}#{term_id}"
 /// This design allows direct GetItem queries without needing a GSI
-async fn create_user_agreements_table(
-    client: &aws_sdk_dynamodb::Client,
-) -> Result<(), TermsOfUseError> {
+async fn create_user_agreements_table(client: &aws_sdk_dynamodb::Client) -> Result<()> {
     if table_exists(client, USER_AGREEMENTS_TABLE).await {
         info!("Table '{USER_AGREEMENTS_TABLE}' already exists, skipping creation");
 
@@ -120,7 +116,7 @@ async fn create_user_agreements_table(
 fn build_attribute_definition(
     name: &str,
     attr_type: ScalarAttributeType,
-) -> Result<AttributeDefinition, TermsOfUseError> {
+) -> Result<AttributeDefinition> {
     AttributeDefinition::builder()
         .attribute_name(name)
         .attribute_type(attr_type)
@@ -132,10 +128,7 @@ fn build_attribute_definition(
         })
 }
 
-fn build_key_schema_element(
-    name: &str,
-    key_type: KeyType,
-) -> Result<KeySchemaElement, TermsOfUseError> {
+fn build_key_schema_element(name: &str, key_type: KeyType) -> Result<KeySchemaElement> {
     KeySchemaElement::builder()
         .attribute_name(name)
         .key_type(key_type)

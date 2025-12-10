@@ -5,7 +5,7 @@ pub struct CreateTermOfUseDTO {
 }
 
 #[derive(Debug)]
-#[cfg_attr(feature = "publisher", derive(serde::Serialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct AcceptedTermOfUseDTO {
     pub term_id: i32,
     pub user_id: i32,

@@ -1,4 +1,4 @@
-use crate::domain::{data::service::PublisherService, errors::TermsOfUseError};
+use domain::{data::service::PublisherService, dto::AcceptedTermOfUseDTO, errors::TermsOfUseError};
 
 #[derive(Clone, Debug)]
 pub struct NoopPublisher;
@@ -10,12 +10,7 @@ impl NoopPublisher {
 }
 
 impl PublisherService for NoopPublisher {
-    async fn publish_agreement(
-        &self,
-        _user_id: i32,
-        _term_id: i32,
-        _group: &str,
-    ) -> Result<(), TermsOfUseError> {
+    async fn publish_agreement(&self, _: AcceptedTermOfUseDTO) -> Result<(), TermsOfUseError> {
         Ok(())
     }
 }

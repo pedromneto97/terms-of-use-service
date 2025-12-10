@@ -1,10 +1,10 @@
-use crate::domain::{
+use crate::{
     data::{
         repository::{TermRepository, UserAgreementRepository},
         service::{CacheService, PublisherService},
     },
     dto::AcceptedTermOfUseDTO,
-    errors::TermsOfUseError,
+    errors::{Result, TermsOfUseError},
 };
 
 #[tracing::instrument(skip(repository, cache, publisher, user_id, term_id))]
@@ -18,7 +18,7 @@ pub async fn create_user_agreement_use_case<
     publisher: &P,
     user_id: i32,
     term_id: i32,
-) -> Result<(), TermsOfUseError> {
+) -> Result<()> {
     let term = repository
         .get_term_by_id(term_id)
         .await?

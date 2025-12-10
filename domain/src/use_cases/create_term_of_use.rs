@@ -2,25 +2,25 @@ use std::path::Path;
 
 use chrono::Utc;
 
-use crate::domain::{
+use crate::{
     data::{
         repository::TermRepository,
         service::{CacheService, StorageService},
     },
     dto::CreateTermOfUseDTO,
     entities::TermOfUse,
-    errors::TermsOfUseError,
+    errors::Result,
 };
 
 #[tracing::instrument(skip(repository, upload_service, cache_service, term, file_path))]
-pub async fn create_term_of_use_use_case(
-    repository: &impl TermRepository,
-    upload_service: &impl StorageService,
-    cache_service: &impl CacheService,
+pub async fn create_term_of_use_use_case<R: TermRepository, S: StorageService, C: CacheService>(
+    repository: &R,
+    upload_service: &S,
+    cache_service: &C,
     term: CreateTermOfUseDTO,
     file_path: &Path,
     content_type: &str,
-) -> Result<TermOfUse, TermsOfUseError> {
+) -> Result<TermOfUse> {
     let latest_term = repository.get_latest_term_for_group(&term.group).await?;
     let next_version = match latest_term {
         Some(t) => t.version + 1,

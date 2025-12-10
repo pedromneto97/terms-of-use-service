@@ -1,5 +1,5 @@
 ---
-applyTo: src/domain/**
+applyTo: domain/**
 ---
 # Domain Layer Instructions
 
@@ -8,7 +8,7 @@ Contains all business logic, entities, and trait definitions. Must remain indepe
 
 ## Structure
 ```
-src/domain/
+domain/
 ├── entities.rs      # Core domain models (TermOfUse, etc.)
 ├── dto.rs           # Data transfer objects for use cases
 ├── errors.rs        # Domain error types
@@ -60,6 +60,6 @@ Outbound adapters must implement these traits:
 - **Testable**: Use mock trait implementations for unit tests
 
 ## Key Files
-- `src/domain/use_cases/create_term_of_use.rs` — Example of complete use case pattern
-- `src/domain/data/repository.rs` — Repository trait definitions
-- `src/domain/data/service/cache.rs` — Cache trait and NoopCacheService
+- `domain/use_cases/create_term_of_use.rs` — Example of complete use case pattern
+- `domain/data/repository.rs` — Repository trait definitions
+- `domain/data/service/cache.rs` — Cache trait and NoopCacheService

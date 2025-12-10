@@ -3,7 +3,6 @@ use std::error::Error;
 use dotenvy::dotenv;
 
 mod core;
-pub(crate) mod domain;
 mod inbound;
 mod outbound;
 

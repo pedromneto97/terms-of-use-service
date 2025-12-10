@@ -1,7 +1,7 @@
 use chrono::NaiveDateTime;
 
-#[derive(Debug)]
-#[cfg_attr(feature = "redis", derive(serde::Serialize, serde::Deserialize,))]
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct TermOfUse {
     pub id: i32,
     pub group: String,

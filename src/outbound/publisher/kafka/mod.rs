@@ -1,14 +1,11 @@
 use chrono::Utc;
+use domain::{data::service::PublisherService, dto::AcceptedTermOfUseDTO, errors::TermsOfUseError};
 use rdkafka::{
     config::ClientConfig,
     producer::{FutureProducer, FutureRecord},
 };
 use std::time::Duration;
 use tracing::{error, info};
-
-use crate::domain::{
-    data::service::PublisherService, dto::AcceptedTermOfUseDTO, errors::TermsOfUseError,
-};
 
 #[derive(Clone)]
 pub struct KafkaPublisher {

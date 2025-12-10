@@ -2,9 +2,8 @@ use std::path::Path;
 
 use aws_config::BehaviorVersion;
 use aws_sdk_s3::{config::Builder as S3ConfigBuilder, primitives::ByteStream};
+use domain::{data::service::StorageService, errors::TermsOfUseError};
 use tracing::{error, info};
-
-use crate::domain::{data::service::StorageService, errors::TermsOfUseError};
 
 #[derive(Clone, Debug)]
 pub struct StorageConfig {

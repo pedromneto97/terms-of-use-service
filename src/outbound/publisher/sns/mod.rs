@@ -1,10 +1,7 @@
 use aws_config::BehaviorVersion;
 use aws_sdk_sns::{Client, config::Builder};
+use domain::{data::service::PublisherService, dto::AcceptedTermOfUseDTO, errors::TermsOfUseError};
 use tracing::{error, info};
-
-use crate::domain::{
-    data::service::PublisherService, dto::AcceptedTermOfUseDTO, errors::TermsOfUseError,
-};
 
 #[derive(Clone, Debug)]
 pub struct SNSPublisher {

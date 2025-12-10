@@ -9,12 +9,12 @@ mod actix;
 mod grpc;
 
 // Compile-time validation: ensure only one server feature is enabled
-#[cfg(all(feature = "actix-web", feature = "grpc"))]
+#[cfg(all(feature = "actix-web", feature = "grpc", not(test)))]
 compile_error!(
     "Features 'actix-web' and 'grpc' cannot be enabled simultaneously. Choose one server type."
 );
 
-#[cfg(not(any(feature = "actix-web", feature = "grpc")))]
+#[cfg(not(any(feature = "actix-web", feature = "grpc", test)))]
 compile_error!("No server feature enabled. Please enable at least one: 'actix-web' or 'grpc'.");
 
 pub async fn start_server(config: Config) -> Result<(), impl Error> {
@@ -23,4 +23,6 @@ pub async fn start_server(config: Config) -> Result<(), impl Error> {
 
     #[cfg(feature = "grpc")]
     return grpc::start_server(config).await;
+
+    Ok(())
 }

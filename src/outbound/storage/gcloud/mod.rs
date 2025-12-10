@@ -1,10 +1,9 @@
 use std::path::Path;
 
+use domain::{data::service::StorageService, errors::TermsOfUseError};
 use google_cloud_storage::client::{Storage, StorageControl};
 use tokio::fs;
 use tracing::{error, info};
-
-use crate::domain::{data::service::StorageService, errors::TermsOfUseError};
 
 #[derive(Clone, Debug)]
 pub struct GoogleCloudStorage {

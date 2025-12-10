@@ -1,9 +1,9 @@
-use crate::domain::{
+use crate::{
     data::{
         repository::{TermRepository, UserAgreementRepository},
         service::CacheService,
     },
-    errors::TermsOfUseError,
+    errors::{Result, TermsOfUseError},
 };
 
 #[tracing::instrument(skip(repository, cache, user_id, group))]
@@ -15,8 +15,12 @@ pub async fn has_user_agreed_to_term_use_case<
     cache: &C,
     user_id: i32,
     group: &str,
-) -> Result<bool, TermsOfUseError> {
-    if let Some(agreed) = cache.find_user_agreement(user_id, group).await? {
+) -> Result<bool> {
+    if let Some(agreed) = cache
+        .find_user_agreement(user_id, group)
+        .await
+        .unwrap_or(None)
+    {
         return Ok(agreed);
     }
 

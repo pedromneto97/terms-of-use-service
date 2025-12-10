@@ -1,4 +1,4 @@
-#[cfg(not(feature = "publisher"))]
+#[cfg(any(not(feature = "publisher"), test))]
 pub mod noop;
 
 #[cfg(feature = "sns")]

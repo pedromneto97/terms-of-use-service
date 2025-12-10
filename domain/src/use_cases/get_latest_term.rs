@@ -1,19 +1,19 @@
-use crate::domain::{
+use crate::{
     data::{
         repository::TermRepository,
         service::{CacheService, StorageService},
     },
     entities::TermOfUse,
-    errors::TermsOfUseError,
+    errors::{Result, TermsOfUseError},
 };
 
 #[tracing::instrument(skip(repository, cache_service, upload_service, group))]
-pub async fn get_latest_term_use_case(
-    repository: &impl TermRepository,
-    cache_service: &impl CacheService,
-    upload_service: &impl StorageService,
+pub async fn get_latest_term_use_case<R: TermRepository, C: CacheService, S: StorageService>(
+    repository: &R,
+    cache_service: &C,
+    upload_service: &S,
     group: &str,
-) -> Result<TermOfUse, TermsOfUseError> {
+) -> Result<TermOfUse> {
     let term = cache_service.get_latest_term_for_group(group).await;
     if let Ok(Some(term)) = term {
         return Ok(term);

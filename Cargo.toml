@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [workspace]
-members = ["migration"]
+members = ["domain", "migration"]
 
 [dependencies]
 actix-multipart = { version = "0.7.2", optional = true }
@@ -15,6 +15,7 @@ aws-sdk-s3 = { version = "1.117", optional = true }
 aws-sdk-sns = { version = "1.92", optional = true }
 chrono = { version = "0.4", features = ["serde"] }
 deadpool-redis = { version = "0.22.0", optional = true }
+domain = { path = "domain" }
 dotenvy = "0.15.7"
 opentelemetry = { version = "0.31", optional = true }
 opentelemetry-appender-tracing = { version = "0.31.0", optional = true }
@@ -55,7 +56,6 @@ init-tracing-opentelemetry = { version = "0.34.0", features = [
 google-cloud-storage = { version = "1.5", optional = true }
 rdkafka = { version = "0.38", optional = true }
 
-
 [build-dependencies]
 tonic-prost-build = { version = "0.14", optional = true }
 
@@ -78,7 +78,7 @@ dynamodb = ["aws-sdk-dynamodb", "aws-config"]
 
 # Cache
 cache = []
-redis = ["dep:deadpool-redis", "dep:serde_json", "dep:serde", "cache"]
+redis = ["dep:deadpool-redis", "dep:serde_json", "domain/serde", "cache"]
 
 # Storage
 gcloud = ["google-cloud-storage", "uuid", "tokio/fs"]
@@ -98,7 +98,7 @@ otel = [
 ]
 
 # Publishers
-publisher = ["dep:serde", "dep:serde_json"]
+publisher = ["domain/serde", "dep:serde_json"]
 sns = ["aws-sdk-sns", "publisher", "aws-config"]
 kafka = ["rdkafka", "publisher"]
 
