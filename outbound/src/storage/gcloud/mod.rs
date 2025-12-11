@@ -129,3 +129,86 @@ impl StorageService for GoogleCloudStorage {
         ))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    async fn build_test_storage(bucket_name: &str) -> GoogleCloudStorage {
+        let client = Storage::builder()
+            .build()
+            .await
+            .expect("Failed to build test Storage client");
+        let control_client = StorageControl::builder()
+            .build()
+            .await
+            .expect("Failed to build test StorageControl client");
+
+        GoogleCloudStorage {
+            bucket: format!("projects/_/buckets/{bucket_name}"),
+            bucket_name: bucket_name.to_string(),
+            client,
+            control_client,
+        }
+    }
+
+    #[tokio::test]
+    async fn builds_url_for_file() {
+        let storage = build_test_storage("test-gcs-bucket").await;
+
+        let url = storage
+            .get_file_url("uploads/file.pdf")
+            .await
+            .expect("url should be built");
+
+        assert_eq!(
+            url,
+            "https://storage.googleapis.com/test-gcs-bucket/uploads/file.pdf"
+        );
+    }
+
+    #[tokio::test]
+    async fn builds_url_for_file_with_uuid() {
+        let storage = build_test_storage("my-terms-bucket").await;
+
+        let url = storage
+            .get_file_url("a1b2c3d4-e5f6-7890-abcd-ef1234567890.pdf")
+            .await
+            .expect("url should be built");
+
+        assert_eq!(
+            url,
+            "https://storage.googleapis.com/my-terms-bucket/a1b2c3d4-e5f6-7890-abcd-ef1234567890.pdf"
+        );
+    }
+
+    #[tokio::test]
+    async fn builds_url_for_nested_path() {
+        let storage = build_test_storage("test-gcs-bucket").await;
+
+        let url = storage
+            .get_file_url("terms/2024/file.pdf")
+            .await
+            .expect("url should be built");
+
+        assert_eq!(
+            url,
+            "https://storage.googleapis.com/test-gcs-bucket/terms/2024/file.pdf"
+        );
+    }
+
+    #[tokio::test]
+    async fn builds_url_with_special_characters() {
+        let storage = build_test_storage("test-gcs-bucket").await;
+
+        let url = storage
+            .get_file_url("terms/user-123/file%20name.pdf")
+            .await
+            .expect("url should be built");
+
+        assert_eq!(
+            url,
+            "https://storage.googleapis.com/test-gcs-bucket/terms/user-123/file%20name.pdf"
+        );
+    }
+}
