@@ -68,3 +68,68 @@ impl PublisherService for SNSPublisher {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use aws_config::Region;
+    use aws_credential_types::{Credentials, provider::SharedCredentialsProvider};
+    use aws_sdk_sns::Config;
+    use domain::dto::AcceptedTermOfUseDTO;
+    use domain::errors::TermsOfUseError;
+
+    fn client() -> Client {
+        let config = Config::builder()
+            .behavior_version(BehaviorVersion::latest())
+            .credentials_provider(SharedCredentialsProvider::new(Credentials::for_tests()))
+            .region(Region::new("us-east-1"))
+            .build();
+
+        Client::from_conf(config)
+    }
+
+    #[tokio::test]
+    async fn new_builds_topic_arn_from_env() {
+        unsafe {
+            std::env::set_var("AWS_ACCOUNT_ID", "123456789012");
+            std::env::set_var("AWS_REGION", "us-east-1");
+            std::env::set_var("SNS_TOPIC_NAME", "terms-agreements");
+        }
+
+        let publisher = SNSPublisher::new().await;
+
+        assert_eq!(
+            publisher.topic_arn,
+            "arn:aws:sns:us-east-1:123456789012:terms-agreements"
+        );
+
+        unsafe {
+            std::env::remove_var("AWS_ACCOUNT_ID");
+            std::env::remove_var("AWS_REGION");
+            std::env::remove_var("SNS_TOPIC_NAME");
+        }
+    }
+
+    #[tokio::test]
+    async fn publish_returns_internal_error_on_send_failure() {
+        let publisher = SNSPublisher {
+            client: client(),
+            topic_arn: "arn:aws:sns:us-east-1:123456789012:terms-agreements".to_string(),
+        };
+
+        let dto = AcceptedTermOfUseDTO {
+            term_id: 1,
+            user_id: 2,
+            group: "privacy-policy".to_string(),
+        };
+
+        let res = publisher.publish_agreement(dto).await;
+
+        assert!(res.is_err());
+
+        match res.err().unwrap() {
+            TermsOfUseError::InternalServerError => {}
+            other => panic!("expected InternalServerError, got {:?}", other),
+        }
+    }
+}
