@@ -4,19 +4,19 @@ version = "0.1.0"
 edition = "2024"
 
 [workspace]
-members = ["domain", "migration"]
+members = ["domain", "migration", "outbound"]
 
 [dependencies]
 actix-multipart = { version = "0.7.2", optional = true }
 actix-web = { version = "4", optional = true }
-aws-config = { version = "1.8", optional = true }
-aws-sdk-dynamodb = { version = "1.101", optional = true }
-aws-sdk-s3 = { version = "1.117", optional = true }
-aws-sdk-sns = { version = "1.92", optional = true }
 chrono = { version = "0.4", features = ["serde"] }
-deadpool-redis = { version = "0.22.0", optional = true }
 domain = { path = "domain" }
 dotenvy = "0.15.7"
+init-tracing-opentelemetry = { version = "0.34.0", features = [
+    "otlp",
+    "metrics",
+    "tracing_subscriber_ext",
+], optional = true }
 opentelemetry = { version = "0.31", optional = true }
 opentelemetry-appender-tracing = { version = "0.31.0", optional = true }
 opentelemetry-instrumentation-actix-web = { version = "0.23.0", features = [
@@ -30,37 +30,26 @@ opentelemetry-otlp = { version = "0.31", features = [
     "grpc-tonic",
     "metrics",
 ], optional = true }
+outbound = { path = "outbound" }
+prost = { version = "0.14", optional = true }
+serde = { version = "1", features = ["derive"], optional = true }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tonic = { version = "0.14", features = ["zstd"], optional = true }
+tonic-prost = { version = "0.14", optional = true }
+tonic-tracing-opentelemetry = { version = "0.32.0", optional = true }
 tracing = { version = "0.1" }
 tracing-subscriber = { version = "0.3", features = [
     "env-filter",
 ], optional = true }
 tracing-opentelemetry = { version = "0.32", optional = true }
-migration = { path = "migration", optional = true }
-sea-orm = { version = "~2.0.0-rc.20", features = [
-    "macros",
-    "with-chrono",
-], optional = true, default-features = false }
-serde = { version = "1", features = ["derive"], optional = true }
-serde_json = { version = "1.0.145", optional = true }
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 uuid = { version = "1.19.0", optional = true, features = ["v4"] }
-tonic = { version = "0.14", features = ["zstd"], optional = true }
-prost = { version = "0.14", optional = true }
-tonic-prost = { version = "0.14", optional = true }
-tonic-tracing-opentelemetry = { version = "0.32.0", optional = true }
-init-tracing-opentelemetry = { version = "0.34.0", features = [
-    "otlp",
-    "metrics",
-    "tracing_subscriber_ext",
-], optional = true }
-google-cloud-storage = { version = "1.5", optional = true }
-rdkafka = { version = "0.38", optional = true }
 
 [build-dependencies]
 tonic-prost-build = { version = "0.14", optional = true }
 
 
 [features]
+default = ["otel"]
 # Web server
 actix-web = ["dep:actix-web", "dep:serde", "dep:actix-multipart"]
 grpc = [
@@ -73,16 +62,14 @@ grpc = [
 ]
 
 # Databases
-postgres = ["dep:sea-orm", "sea-orm/sqlx-postgres", "dep:migration"]
-dynamodb = ["aws-sdk-dynamodb", "aws-config"]
+postgres = ["outbound/postgres"]
+dynamodb = ["outbound/dynamodb"]
 
 # Cache
-cache = []
-redis = ["dep:deadpool-redis", "dep:serde_json", "domain/serde", "cache"]
-
+redis = ["outbound/redis"]
 # Storage
-gcloud = ["google-cloud-storage", "uuid", "tokio/fs"]
-s3 = ["aws-config", "uuid", "aws-sdk-s3"]
+gcloud = ["outbound/gcloud"]
+s3 = ["outbound/s3"]
 
 # OpenTelemetry
 otel = [
@@ -98,9 +85,8 @@ otel = [
 ]
 
 # Publishers
-publisher = ["domain/serde", "dep:serde_json"]
-sns = ["aws-sdk-sns", "publisher", "aws-config"]
-kafka = ["rdkafka", "publisher"]
+sns = ["outbound/sns"]
+kafka = ["outbound/kafka"]
 
 # Stack
 aws = ["s3", "dynamodb", "sns"]

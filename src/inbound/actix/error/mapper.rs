@@ -1,6 +1,5 @@
 use actix_web::{HttpResponse, ResponseError, http::StatusCode};
-
-use crate::domain::errors::TermsOfUseError;
+use domain::errors::TermsOfUseError;
 
 use super::response::ProblemDetails;
 

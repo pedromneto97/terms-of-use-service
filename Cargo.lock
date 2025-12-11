@@ -3229,6 +3229,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "outbound"
+version = "0.1.0"
+dependencies = [
+ "aws-config",
+ "aws-sdk-dynamodb",
+ "aws-sdk-s3",
+ "aws-sdk-sns",
+ "chrono",
+ "deadpool-redis",
+ "domain",
+ "google-cloud-storage",
+ "migration",
+ "rdkafka",
+ "sea-orm",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "outref"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4934,27 +4955,18 @@ version = "0.1.0"
 dependencies = [
  "actix-multipart",
  "actix-web",
- "aws-config",
- "aws-sdk-dynamodb",
- "aws-sdk-s3",
- "aws-sdk-sns",
  "chrono",
- "deadpool-redis",
  "domain",
  "dotenvy",
- "google-cloud-storage",
  "init-tracing-opentelemetry",
- "migration",
  "opentelemetry",
  "opentelemetry-appender-tracing",
  "opentelemetry-instrumentation-actix-web",
  "opentelemetry-otlp",
  "opentelemetry_sdk",
+ "outbound",
  "prost",
- "rdkafka",
- "sea-orm",
  "serde",
- "serde_json",
  "tokio",
  "tonic",
  "tonic-prost",

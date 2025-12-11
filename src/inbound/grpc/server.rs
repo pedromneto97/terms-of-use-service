@@ -1,22 +1,23 @@
+use domain::{
+    dto::CreateTermOfUseDTO,
+    use_cases::{
+        create_term_of_use_use_case, create_user_agreement_use_case, get_latest_term_use_case,
+        has_user_agreed_to_term_use_case,
+    },
+};
 use tokio::io::AsyncWriteExt;
 use tonic::{Request, Response, Status, Streaming};
 use tracing::{debug, error, info};
 
 use crate::{
     core::Config,
-    domain::{
-        dto::CreateTermOfUseDTO,
-        use_cases::{
-            create_term_of_use_use_case, create_user_agreement_use_case, get_latest_term_use_case,
-            has_user_agreed_to_term_use_case,
-        },
-    },
     inbound::grpc::{
         CreateConsentRequest, CreateTermRequest, CreateTermResponse, GetLatestTermsRequest,
         GetLatestTermsResponse, HasConsentResponse, HasConsentedRequest,
         create_term_request::{CreateTermContent, CreateTermData},
         file_upload,
         get_latest_terms_response::TermOfUseContent,
+        mapper::ToStatus,
         terms_of_use_service_server::TermsOfUseService,
     },
 };
@@ -47,7 +48,8 @@ impl TermsOfUseService for GrpcService {
             request.user_id,
             &request.group,
         )
-        .await?;
+        .await
+        .map_err(|e| e.to_status())?;
 
         Ok(Response::new(HasConsentResponse {
             has_consented: result,
@@ -67,7 +69,8 @@ impl TermsOfUseService for GrpcService {
             &self.config.storage,
             &request.group,
         )
-        .await?;
+        .await
+        .map_err(|e| e.to_status())?;
 
         Ok(Response::new(GetLatestTermsResponse {
             term_of_use_content: Some(match request.only_url {
@@ -91,7 +94,8 @@ impl TermsOfUseService for GrpcService {
             request.user_id,
             request.term_id,
         )
-        .await?;
+        .await
+        .map_err(|e| e.to_status())?;
 
         Ok(Response::new(()))
     }
@@ -147,7 +151,8 @@ impl TermsOfUseService for GrpcService {
             &file_path,
             &data.content_type,
         )
-        .await?;
+        .await
+        .map_err(|e| e.to_status())?;
 
         Ok(Response::new(CreateTermResponse::from(term)))
     }

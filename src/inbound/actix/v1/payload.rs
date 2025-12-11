@@ -1,7 +1,6 @@
 use actix_multipart::form::{MultipartForm, json::Json, tempfile::TempFile};
+use domain::dto::CreateTermOfUseDTO;
 use serde::Deserialize;
-
-use crate::domain::dto::CreateTermOfUseDTO;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]

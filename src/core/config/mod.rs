@@ -1,11 +1,4 @@
-use crate::core::config::{
-    cache::Cache, publisher::Publisher, repository::AppRepository, storage::Storage,
-};
-
-mod cache;
-mod publisher;
-mod repository;
-mod storage;
+use outbound::{AppRepository, Cache, Publisher, Storage};
 
 #[derive(Clone, Debug)]
 pub struct Config {

@@ -4,7 +4,6 @@ use dotenvy::dotenv;
 
 mod core;
 mod inbound;
-mod outbound;
 
 #[tokio::main]
 async fn main() -> Result<(), impl Error> {

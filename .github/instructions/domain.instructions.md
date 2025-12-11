@@ -4,62 +4,32 @@ applyTo: domain/**
 # Domain Layer Instructions
 
 ## Purpose
-Contains all business logic, entities, and trait definitions. Must remain independent of infrastructure (no direct database or HTTP dependencies).
+Hold all business logic, entities, DTOs, and traits. Must stay free of infrastructure (no HTTP, DB, or SDK imports).
 
 ## Structure
 ```
 domain/
-├── entities.rs      # Core domain models (TermOfUse, etc.)
-├── dto.rs           # Data transfer objects for use cases
-├── errors.rs        # Domain error types
+├── entities.rs      # Domain models
+├── dto.rs           # DTOs used by use cases
+├── errors.rs        # TermsOfUseError and variants
 ├── data/
-│   ├── mod.rs
-│   ├── repository.rs  # Repository traits (TermRepository, UserAgreementRepository)
-│   └── service/       # Service traits (CacheService, StorageService, PublisherService)
-│       ├── mod.rs
-│       ├── cache.rs
-│       ├── storage.rs
-│       └── publisher.rs
-└── use_cases/         # Business logic orchestration
+│   ├── repository.rs  # Traits: TermRepository, UserAgreementRepository
+│   └── service/       # Traits: CacheService, StorageService, PublisherService
+└── use_cases/         # Business rules orchestrated by use cases
 ```
 
-## Core Traits
-Outbound adapters must implement these traits:
-
-### Repository Traits (`data/repository.rs`)
-- `TermRepository`: `get_latest_term_for_group`, `get_term_by_id`, `create_term`
-- `UserAgreementRepository`: `has_user_agreed_to_term`, `create_user_agreement`
-
-### Service Traits (`data/service/`)
-- `CacheService` (`cache.rs`): Cache operations for terms and agreements
-  - Methods: `find_user_agreement`, `store_user_agreement`, `get_latest_term_for_group`, `store_latest_term_for_group`, `invalidate_cache_for_group`
-  - Default implementation: `NoopCacheService` when no cache feature is enabled
-- `StorageService` (`storage.rs`): File upload/delete/URL operations
-  - Methods: `upload_file`, `delete_file`, `get_file_url`
-- `PublisherService` (`publisher.rs`): Event publishing for user agreements
-  - Methods: `publish_agreement`
-  - Default implementation: `NoopPublisherService` when no publisher feature is enabled
-
-## Adding a New Use Case
-1. Create file in `src/domain/use_cases/` (e.g., `revoke_agreement.rs`)
-2. Define async function accepting trait references (not concrete types):
-   ```rust
-   pub async fn my_use_case(
-       repository: &impl TermRepository,
-       cache: &impl CacheService,
-       // ...params
-   ) -> Result<ReturnType, TermsOfUseError>
-   ```
-3. Export in `use_cases/mod.rs`
-4. Wire to API endpoint in inbound layer
-
 ## Conventions
-- **Never import infrastructure code** — only use traits
-- **All validation logic** belongs here, not in API or Data layers
-- **Use `TermsOfUseError`** for all error handling
-- **Testable**: Use mock trait implementations for unit tests
+- Use cases accept `&impl Trait` and return `Result<_, TermsOfUseError>`; no concrete infra types.
+- Keep validation and business rules here; inbound/outbound should not re-validate business rules.
+- Map all failures to `TermsOfUseError`; avoid leaking infra specifics.
+- Provide unit tests with mocked traits (`mockall`) covering success and validation errors.
 
-## Key Files
-- `domain/use_cases/create_term_of_use.rs` — Example of complete use case pattern
-- `domain/data/repository.rs` — Repository trait definitions
-- `domain/data/service/cache.rs` — Cache trait and NoopCacheService
+## Core traits
+- `TermRepository`, `UserAgreementRepository` in `data/repository.rs`.
+- `CacheService`, `StorageService`, `PublisherService` in `data/service/` (noop implementations exist in outbound when features are off).
+
+## Adding a use case
+1) Add a file in `domain/use_cases/` and export it from `use_cases/mod.rs`.
+2) Accept dependencies as trait references; do not depend on concrete types or config.
+3) Enforce business validation inside the use case; return meaningful `TermsOfUseError` variants.
+4) Add unit tests for happy path and failure scenarios.

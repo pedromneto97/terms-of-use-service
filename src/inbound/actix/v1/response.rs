@@ -1,6 +1,5 @@
+use domain::entities::TermOfUse;
 use serde::Serialize;
-
-use crate::domain::entities::TermOfUse;
 
 #[derive(Debug, Serialize)]
 pub struct TermOfUseUrlResponse {

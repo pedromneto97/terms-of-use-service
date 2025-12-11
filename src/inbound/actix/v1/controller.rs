@@ -3,13 +3,13 @@ use actix_web::{
     HttpResponse, get, post,
     web::{self, Path},
 };
+use domain::use_cases::{
+    create_term_of_use_use_case, create_user_agreement_use_case, get_latest_term_use_case,
+    has_user_agreed_to_term_use_case,
+};
 
 use crate::{
     core::Config,
-    domain::use_cases::{
-        create_term_of_use_use_case, create_user_agreement_use_case, get_latest_term_use_case,
-        has_user_agreed_to_term_use_case,
-    },
     inbound::actix::{
         error::response::ProblemDetails,
         v1::{
