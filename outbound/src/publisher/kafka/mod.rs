@@ -85,3 +85,58 @@ impl PublisherService for KafkaPublisher {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use domain::dto::AcceptedTermOfUseDTO;
+    use rdkafka::{config::ClientConfig, producer::FutureProducer};
+
+    fn create_test_producer() -> FutureProducer {
+        ClientConfig::new()
+            .set("bootstrap.servers", "invalid:9092")
+            .set("message.timeout.ms", "100")
+            .create()
+            .expect("Failed to create test producer")
+    }
+
+    #[tokio::test]
+    async fn new_builds_publisher_with_env_vars() {
+        unsafe {
+            std::env::set_var("KAFKA_BROKERS", "testbroker:9092");
+            std::env::set_var("KAFKA_TOPIC", "test-topic");
+        }
+
+        let publisher = KafkaPublisher::new().await;
+
+        assert_eq!(publisher.topic, "test-topic");
+
+        unsafe {
+            std::env::remove_var("KAFKA_BROKERS");
+            std::env::remove_var("KAFKA_TOPIC");
+        }
+    }
+
+    #[tokio::test]
+    async fn publish_returns_internal_error_on_send_failure() {
+        let publisher = KafkaPublisher {
+            producer: create_test_producer(),
+            topic: "test-topic".to_string(),
+        };
+
+        let dto = AcceptedTermOfUseDTO {
+            term_id: 1,
+            user_id: 2,
+            group: "privacy-policy".to_string(),
+        };
+
+        let res = publisher.publish_agreement(dto).await;
+
+        assert!(res.is_err());
+
+        match res.err().unwrap() {
+            TermsOfUseError::InternalServerError => {}
+            other => panic!("expected InternalServerError, got {:?}", other),
+        }
+    }
+}
