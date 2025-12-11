@@ -116,3 +116,52 @@ impl StorageService for S3Storage {
         ))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use aws_credential_types::{Credentials, provider::SharedCredentialsProvider};
+    use aws_types::region::Region;
+
+    fn test_client() -> aws_sdk_s3::Client {
+        let config = aws_sdk_s3::Config::builder()
+            .behavior_version(BehaviorVersion::latest())
+            .credentials_provider(SharedCredentialsProvider::new(Credentials::for_tests()))
+            .region(Region::new("us-east-1"))
+            .build();
+
+        aws_sdk_s3::Client::from_conf(config)
+    }
+
+    fn build_storage(endpoint_url: Option<&str>) -> S3Storage {
+        S3Storage {
+            bucket_name: "test-bucket".to_string(),
+            client: test_client(),
+            endpoint_url: endpoint_url.map(String::from),
+        }
+    }
+
+    #[tokio::test]
+    async fn builds_url_with_custom_endpoint() {
+        let storage = build_storage(Some("http://localhost:4566"));
+
+        let url = storage
+            .get_file_url("uploads/file.pdf")
+            .await
+            .expect("url should be built");
+
+        assert_eq!(url, "http://localhost:4566/test-bucket/uploads/file.pdf");
+    }
+
+    #[tokio::test]
+    async fn builds_url_with_default_host() {
+        let storage = build_storage(None);
+
+        let url = storage
+            .get_file_url("uploads/file.pdf")
+            .await
+            .expect("url should be built");
+
+        assert_eq!(url, "https://test-bucket.s3.amazonaws.com/uploads/file.pdf");
+    }
+}

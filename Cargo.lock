@@ -3233,9 +3233,11 @@ name = "outbound"
 version = "0.1.0"
 dependencies = [
  "aws-config",
+ "aws-credential-types",
  "aws-sdk-dynamodb",
  "aws-sdk-s3",
  "aws-sdk-sns",
+ "aws-types",
  "chrono",
  "deadpool-redis",
  "domain",

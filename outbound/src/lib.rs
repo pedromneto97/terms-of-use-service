@@ -19,10 +19,11 @@ compile_error!("Multiple storage features enabled. Please enable only one: 's3' 
 // Feature-aware re-exports so consumers can import adapters directly from `outbound`.
 
 // Database adapters
-#[cfg(feature = "postgres")]
+// Database adapters (mutually exclusive; prefer Postgres under tests if both are enabled via `--all-features`).
+#[cfg(all(feature = "postgres", not(feature = "dynamodb")))]
 pub use database::postgres::PostgresRepository as AppRepository;
 
-#[cfg(feature = "dynamodb")]
+#[cfg(all(feature = "dynamodb", not(feature = "postgres")))]
 pub use database::dynamodb::DynamoRepository as AppRepository;
 
 // Cache adapters
@@ -33,10 +34,11 @@ pub use cache::redis::RedisCache as Cache;
 pub use cache::noop::NoopCache as Cache;
 
 // Storage adapters
-#[cfg(feature = "s3")]
+// Storage adapters (mutually exclusive; default to S3 under tests if both are enabled via `--all-features`).
+#[cfg(all(feature = "s3", not(feature = "gcloud")))]
 pub use storage::s3::S3Storage as Storage;
 
-#[cfg(feature = "gcloud")]
+#[cfg(all(feature = "gcloud", not(feature = "s3")))]
 pub use storage::gcloud::GoogleCloudStorage as Storage;
 
 // Publisher adapters
