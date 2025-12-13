@@ -12,56 +12,53 @@ pub const TERMS_TABLE: &str = "terms";
 pub const USER_AGREEMENTS_TABLE: &str = "user_agreements";
 
 fn as_string(val: Option<&AttributeValue>) -> String {
-    if let Some(v) = val {
-        if let Ok(s) = v.as_s() {
-            return s.to_owned();
-        }
+    if let Some(v) = val
+        && let Ok(s) = v.as_s()
+    {
+        return s.to_owned();
     }
 
     "".to_owned()
 }
 
 fn as_optional_string(val: Option<&AttributeValue>) -> Option<String> {
-    if let Some(v) = val {
-        if let Ok(s) = v.as_s() {
-            return Some(s.to_owned());
-        }
+    if let Some(v) = val
+        && let Ok(s) = v.as_s()
+    {
+        return Some(s.to_owned());
     }
 
     None
 }
 
 fn as_i32(val: Option<&AttributeValue>) -> i32 {
-    if let Some(v) = val {
-        if let Ok(s) = v.as_n() {
-            if let Ok(n) = s.parse::<i32>() {
-                return n;
-            }
-        }
+    if let Some(v) = val
+        && let Ok(s) = v.as_n()
+        && let Ok(n) = s.parse::<i32>()
+    {
+        return n;
     }
 
     0
 }
 
 fn as_i64(val: Option<&AttributeValue>) -> i64 {
-    if let Some(v) = val {
-        if let Ok(s) = v.as_n() {
-            if let Ok(n) = s.parse::<i64>() {
-                return n;
-            }
-        }
+    if let Some(v) = val
+        && let Ok(s) = v.as_n()
+        && let Ok(n) = s.parse::<i64>()
+    {
+        return n;
     }
 
     0
 }
 
 fn as_u32(val: Option<&AttributeValue>) -> u32 {
-    if let Some(v) = val {
-        if let Ok(s) = v.as_n() {
-            if let Ok(n) = s.parse::<u32>() {
-                return n;
-            }
-        }
+    if let Some(v) = val
+        && let Ok(s) = v.as_n()
+        && let Ok(n) = s.parse::<u32>()
+    {
+        return n;
     }
 
     0

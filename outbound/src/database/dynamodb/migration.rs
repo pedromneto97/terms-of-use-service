@@ -83,7 +83,6 @@ async fn create_terms_table(client: &aws_sdk_dynamodb::Client) -> Result<()> {
 
 /// Creates the `user_agreements` table with:
 /// - Primary key: `agreement_key` (String) - Format: "{user_id}#{term_id}"
-/// This design allows direct GetItem queries without needing a GSI
 async fn create_user_agreements_table(client: &aws_sdk_dynamodb::Client) -> Result<()> {
     if table_exists(client, USER_AGREEMENTS_TABLE).await {
         info!("Table '{USER_AGREEMENTS_TABLE}' already exists, skipping creation");

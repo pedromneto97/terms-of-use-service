@@ -4,16 +4,20 @@ mod publisher;
 mod storage;
 
 // Prevent incompatible or missing feature selections at compile time.
-#[cfg(all(feature = "dynamodb", feature = "postgres", not(test)))]
+#[cfg(all(
+    feature = "dynamodb",
+    feature = "postgres",
+    not(any(test, clippy, rustfmt))
+))]
 compile_error!("Features 'dynamodb' and 'postgres' cannot be enabled at the same time.");
 
-#[cfg(not(any(feature = "dynamodb", feature = "postgres", test)))]
+#[cfg(not(any(feature = "dynamodb", feature = "postgres", test, clippy, rustfmt)))]
 compile_error!("Either feature 'dynamodb' or 'postgres' must be enabled.");
 
-#[cfg(not(any(feature = "s3", feature = "gcloud", test)))]
+#[cfg(not(any(feature = "s3", feature = "gcloud", test, clippy, rustfmt)))]
 compile_error!("No storage feature enabled. Please enable at least one: 's3' or 'gcloud'.");
 
-#[cfg(all(feature = "s3", feature = "gcloud", not(test)))]
+#[cfg(all(feature = "s3", feature = "gcloud", not(any(test, clippy, rustfmt))))]
 compile_error!("Multiple storage features enabled. Please enable only one: 's3' or 'gcloud'.");
 
 // Feature-aware re-exports so consumers can import adapters directly from `outbound`.
@@ -28,7 +32,7 @@ pub use database::dynamodb::DynamoRepository as AppRepository;
 
 // Cache adapters
 // Cache adapters (mutually exclusive: `redis` or `valkey`; default to `noop`)
-#[cfg(all(feature = "redis", feature = "valkey", not(test)))]
+#[cfg(all(feature = "redis", feature = "valkey", not(any(test, clippy, rustfmt))))]
 compile_error!("Features 'redis' and 'valkey' cannot be enabled at the same time.");
 
 #[cfg(all(feature = "redis", not(feature = "valkey")))]

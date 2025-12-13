@@ -32,12 +32,12 @@ impl TermRepository for DynamoRepository {
                 TermsOfUseError::InternalServerError
             })?;
 
-        if let Some(items) = value.items {
-            if let Some(item) = items.first() {
-                let term = map_term_from_item(&item)?;
+        if let Some(items) = value.items
+            && let Some(item) = items.first()
+        {
+            let term = map_term_from_item(item)?;
 
-                return Ok(Some(term));
-            }
+            return Ok(Some(term));
         }
 
         Ok(None)
