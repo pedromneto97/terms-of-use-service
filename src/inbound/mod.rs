@@ -22,10 +22,10 @@ compile_error!(
 compile_error!("No server feature enabled. Please enable at least one: 'actix-web' or 'grpc'.");
 
 pub async fn start_server(config: Config) -> Result<(), impl Error> {
-    #[cfg(all(feature = "actix-web", not(any(test, clippy, rustfmt))))]
+    #[cfg(feature = "actix-web")]
     return actix::start_server(config).await;
 
-    #[cfg(all(feature = "grpc", not(any(test, clippy, rustfmt))))]
+    #[cfg(feature = "grpc")]
     return grpc::start_server(config).await;
 
     Ok(())
