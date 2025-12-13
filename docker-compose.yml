@@ -40,6 +40,15 @@ services:
     networks:
       - terms-of-use-network
 
+  valkey:
+    image: bitnami/valkey:latest
+    environment:
+      - VALKEY_PASSWORD=fake
+    ports:
+      - "6379:6379"
+    networks:
+      - terms-of-use-network
+
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     command: ["--config=/etc/otel-collector-config.yaml"]

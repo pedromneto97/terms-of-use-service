@@ -27,10 +27,17 @@ pub use database::postgres::PostgresRepository as AppRepository;
 pub use database::dynamodb::DynamoRepository as AppRepository;
 
 // Cache adapters
-#[cfg(feature = "redis")]
+// Cache adapters (mutually exclusive: `redis` or `valkey`; default to `noop`)
+#[cfg(all(feature = "redis", feature = "valkey", not(test)))]
+compile_error!("Features 'redis' and 'valkey' cannot be enabled at the same time.");
+
+#[cfg(all(feature = "redis", not(feature = "valkey")))]
 pub use cache::redis::RedisCache as Cache;
 
-#[cfg(not(feature = "redis"))]
+#[cfg(all(feature = "valkey", not(feature = "redis")))]
+pub use cache::valkey::ValkeyCache as Cache;
+
+#[cfg(not(any(feature = "redis", feature = "valkey")))]
 pub use cache::noop::NoopCache as Cache;
 
 // Storage adapters

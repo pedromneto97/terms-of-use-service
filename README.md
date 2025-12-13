@@ -32,7 +32,7 @@ cargo build --release --features "actix-web,postgres,s3,otel"
 export DATABASE_URL=postgres://user:pass@localhost:5432/terms_db
 
 # Cache (Redis example)
-export REDIS_URL=redis://localhost:6379
+export CACHE_URL=redis://localhost:6379
 
 # Storage (S3 example)
 export AWS_ACCESS_KEY_ID=your_key
@@ -83,7 +83,7 @@ Before building, decide which adapters you need. Select **one from each required
 | Adapter    | Status | Feature | Best For |
 |:----------:|:------:|:-------:|----------|
 | Redis      | ✅     | `redis` | Fast in-memory caching, sessions |
-| Valkey     | ❌     | `valkey` | Open-source Redis alternative |
+| Valkey     | ✅     | `valkey` | Open-source Redis alternative |
 | None       | ✅     | -       | No-op cache (default if no cache feature enabled) |
 
 ### API Layer (Required)

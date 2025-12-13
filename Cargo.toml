@@ -67,6 +67,8 @@ dynamodb = ["outbound/dynamodb"]
 
 # Cache
 redis = ["outbound/redis"]
+valkey = ["outbound/valkey"]
+
 # Storage
 gcloud = ["outbound/gcloud"]
 s3 = ["outbound/s3"]

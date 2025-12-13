@@ -1,3 +1,3 @@
 use crate::cache::deadpool_redis::DeadpoolRedisCache;
 
-pub type RedisCache = DeadpoolRedisCache;
+pub type ValkeyCache = DeadpoolRedisCache;

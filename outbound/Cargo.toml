@@ -35,7 +35,9 @@ dynamodb = ["aws-sdk-dynamodb", "aws-config"]
 
 # Cache
 cache = []
-redis = ["dep:deadpool-redis", "dep:serde_json", "domain/serde", "cache"]
+deadpool-redis = ["dep:deadpool-redis", "dep:serde_json", "domain/serde"]
+redis = ["deadpool-redis", "cache"]
+valkey = ["deadpool-redis", "cache"]
 
 # Storage
 gcloud = ["google-cloud-storage", "uuid", "tokio"]
