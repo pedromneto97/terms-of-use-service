@@ -27,6 +27,7 @@ uuid = { version = "1.19.0", features = ["v4"], optional = true }
 aws-credential-types = "1.2"
 aws-types = "1.3"
 tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread"] }
+redis-test = "0.12"
 
 [features]
 # Databases

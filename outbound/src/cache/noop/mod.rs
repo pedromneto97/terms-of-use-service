@@ -1,8 +1,4 @@
-use domain::{
-    data::service::CacheService,
-    entities::TermOfUse,
-    errors::{Result, TermsOfUseError},
-};
+use domain::{data::service::CacheService, entities::TermOfUse, errors::Result};
 
 #[derive(Clone, Debug)]
 pub struct NoopCache;

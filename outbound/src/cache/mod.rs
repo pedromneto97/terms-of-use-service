@@ -7,5 +7,5 @@ pub mod redis;
 #[cfg(feature = "valkey")]
 pub mod valkey;
 
-#[cfg(feature = "deadpool-redis")]
+#[cfg(any(feature = "deadpool-redis", test))]
 mod deadpool_redis;
