@@ -99,6 +99,9 @@ jobs:
           toolchain: stable
           profile: minimal
           override: true
+      - name: Set up protoc
+        uses: arduino/setup-protoc@v3
+        if: contains(matrix.feature, 'grpc')
 
       - name: Cache cargo registry
         uses: actions/cache@v5
