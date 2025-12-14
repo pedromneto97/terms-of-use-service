@@ -10,7 +10,19 @@ use crate::database::dynamodb::model::{TERMS_TABLE, USER_AGREEMENTS_TABLE};
 pub const GSI_TERMS_GROUP_VERSION: &str = "gsi_group_version";
 pub const COUNTERS_TABLE: &str = "counters";
 
+#[cfg(test)]
+fn lock_migration() -> &'static tokio::sync::Mutex<()> {
+    use once_cell::sync::Lazy;
+    use tokio::sync::Mutex;
+
+    static MIGRATION_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
+    &MIGRATION_LOCK
+}
+
 pub async fn run_migrations(client: &aws_sdk_dynamodb::Client) -> Result<()> {
+    #[cfg(test)]
+    let _guard = lock_migration().lock().await;
+
     create_counters_table(client).await?;
     create_terms_table(client).await?;
     create_user_agreements_table(client).await?;

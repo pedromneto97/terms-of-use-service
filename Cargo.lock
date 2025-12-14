@@ -3243,6 +3243,7 @@ dependencies = [
  "domain",
  "google-cloud-storage",
  "migration",
+ "once_cell",
  "rdkafka",
  "redis-test",
  "sea-orm",

@@ -28,6 +28,7 @@ aws-credential-types = "1.2"
 aws-types = "1.3"
 tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread"] }
 redis-test = "0.12"
+once_cell = "1.21"
 
 [features]
 # Databases
