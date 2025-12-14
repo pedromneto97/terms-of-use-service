@@ -138,7 +138,9 @@ mod tests {
     async fn test_should_return_none_when_no_terms_exist() {
         let repo = create_test_repository().await;
 
-        let result = repo.get_latest_term_for_group("nonexistent-group").await;
+        let result = repo
+            .get_latest_term_for_group("termrepository-no-terms-exist")
+            .await;
 
         assert!(result.is_ok());
         assert!(result.unwrap().is_none());
@@ -158,10 +160,11 @@ mod tests {
     async fn test_create_term_successful() {
         let repo = create_test_repository().await;
 
+        const GROUP: &str = "termrepository-create-successful";
         let created_at = Utc::now().naive_utc();
         let term = TermOfUse {
             id: 0, // ID should be auto-generated
-            group: "test-group".to_string(),
+            group: GROUP.to_string(),
             url: "https://example.com/terms/v1".to_string(),
             version: 1,
             info: Some("Test term".to_string()),
@@ -170,7 +173,7 @@ mod tests {
 
         let result = repo.create_term(term).await.unwrap();
 
-        assert_eq!(result.group, "test-group");
+        assert_eq!(result.group, GROUP);
         assert_eq!(result.version, 1);
         assert_eq!(result.info.unwrap(), "Test term");
         assert_eq!(result.created_at, created_at);
@@ -181,7 +184,9 @@ mod tests {
     async fn test_get_term_by_id_retrieves_existing_term() {
         let repo = create_test_repository().await;
 
-        let term = create_sample_term(0, "terms-of-service", 1);
+        const GROUP: &str = "termrepository-existing-term";
+
+        let term = create_sample_term(0, GROUP, 1);
         let created_term = repo.create_term(term).await.unwrap();
 
         let retrieved_term = repo
@@ -205,24 +210,24 @@ mod tests {
     async fn test_get_latest_term_for_group_returns_highest_version() {
         let repo = create_test_repository().await;
 
-        let group = "cookie-policy";
+        const GROUP: &str = "termrepository-latest-term-group";
 
         // Create multiple versions
-        let term_v1 = create_sample_term(0, group, 1);
-        let term_v2 = create_sample_term(0, group, 2);
-        let term_v3 = create_sample_term(0, group, 3);
+        let term_v1 = create_sample_term(0, GROUP, 1);
+        let term_v2 = create_sample_term(0, GROUP, 2);
+        let term_v3 = create_sample_term(0, GROUP, 3);
 
         repo.create_term(term_v1).await.expect("v1 created");
         repo.create_term(term_v2).await.expect("v2 created");
         repo.create_term(term_v3).await.expect("v3 created");
 
         let result = repo
-            .get_latest_term_for_group(group)
+            .get_latest_term_for_group(GROUP)
             .await
             .unwrap()
             .expect("Latest term should exist");
 
-        assert_eq!(result.group, group);
+        assert_eq!(result.group, GROUP);
         assert_eq!(result.version, 3);
     }
 }
