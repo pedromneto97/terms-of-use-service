@@ -30,11 +30,23 @@ runs:
           ~/.cargo/git
         key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
 
+    - name: Compute features hash
+      id: hash-features
+      shell: bash
+      run: |
+        features="${{ inputs.features }}"
+        if [ -z "$features" ]; then
+          echo "hash=none" >> $GITHUB_OUTPUT
+        else
+          # compute a short sha256 (8 chars) to keep cache key concise
+          echo -n "$features" | sha256sum | awk '{print $1}' | cut -c1-8 | xargs -I{} echo "hash={}" >> $GITHUB_OUTPUT
+        fi
+
     - name: Cache target
       uses: actions/cache@v5
       with:
         path: target
-        key: ${{ runner.os }}-cargo-target-${{ inputs.features }}-${{ hashFiles('**/Cargo.lock') }}
+        key: ${{ runner.os }}-cargo-target-${{ steps.hash-features.outputs.hash }}-${{ hashFiles('**/Cargo.lock') }}
 
     - name: Check formatting
       shell: bash
