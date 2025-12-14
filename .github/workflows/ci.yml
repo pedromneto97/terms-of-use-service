@@ -50,11 +50,6 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
         ports:
           - 8000:8000
-        options: >-
-          --health-cmd "curl -f http://localhost:8000 || exit 1"
-          --health-interval 5s
-          --health-timeout 2s
-          --health-retries 10
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -63,6 +58,17 @@ jobs:
         with:
           package: outbound
           features: dynamodb
+
+      - name: Wait for DynamoDB
+        run: |
+          for i in $(seq 1 30); do
+            if bash -c "</dev/tcp/localhost/8000" >/dev/null 2>&1; then
+              echo "DynamoDB is available"
+              break
+            fi
+            echo "Waiting for DynamoDB... ($i)"
+            sleep 1
+          done
 
       - name: Run DynamoDB outbound tests
         env:
