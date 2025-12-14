@@ -67,3 +67,37 @@ impl UserAgreementRepository for DynamoRepository {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use domain::data::repository::UserAgreementRepository;
+
+    use crate::database::dynamodb::DynamoRepository;
+
+    async fn create_test_repository() -> DynamoRepository {
+        DynamoRepository::new().await
+    }
+
+    #[tokio::test]
+    async fn test_has_user_agreed_to_term_returns_false_when_no_agreement() {
+        let repo = create_test_repository().await;
+
+        let result = repo.has_user_agreed_to_term(1, 1).await;
+
+        assert!(result.is_ok());
+        assert!(!result.unwrap());
+    }
+
+    #[tokio::test]
+    async fn test_create_user_agreement_succeeds() {
+        let repo = create_test_repository().await;
+
+        let result = repo.create_user_agreement(123, 456).await;
+
+        assert!(result.is_ok());
+
+        let check_result = repo.has_user_agreed_to_term(123, 456).await;
+        assert!(check_result.is_ok());
+        assert!(check_result.unwrap());
+    }
+}

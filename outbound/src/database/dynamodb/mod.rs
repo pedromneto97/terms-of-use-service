@@ -77,3 +77,76 @@ impl DynamoRepository {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::database::dynamodb::{
+        DynamoRepository,
+        migration::COUNTERS_TABLE,
+        model::{TERMS_TABLE, USER_AGREEMENTS_TABLE},
+    };
+    use aws_sdk_dynamodb::types::AttributeValue;
+    use tokio::runtime::{Handle, Runtime};
+
+    impl Drop for DynamoRepository {
+        fn drop(&mut self) {
+            let client = self.client.clone();
+
+            let cleanup = async move {
+                if let Ok(scan_res) = client.scan().table_name(TERMS_TABLE).send().await {
+                    if let Some(items) = scan_res.items {
+                        for item in items {
+                            if let Some(id_str) = item.get("id").and_then(|v| v.as_n().ok()) {
+                                let _ = client
+                                    .delete_item()
+                                    .table_name(TERMS_TABLE)
+                                    .key("id", AttributeValue::N(id_str.to_string()))
+                                    .send()
+                                    .await;
+                            }
+                        }
+                    }
+                }
+
+                if let Ok(scan_res) = client.scan().table_name(COUNTERS_TABLE).send().await {
+                    if let Some(items) = scan_res.items {
+                        for item in items {
+                            if let Some(name) = item.get("counter_name").and_then(|v| v.as_s().ok())
+                            {
+                                let _ = client
+                                    .delete_item()
+                                    .table_name(COUNTERS_TABLE)
+                                    .key("counter_name", AttributeValue::S(name.to_string()))
+                                    .send()
+                                    .await;
+                            }
+                        }
+                    }
+                }
+
+                if let Ok(scan_res) = client.scan().table_name(USER_AGREEMENTS_TABLE).send().await {
+                    if let Some(items) = scan_res.items {
+                        for item in items {
+                            if let Some(agreement) =
+                                item.get("agreement_key").and_then(|v| v.as_s().ok())
+                            {
+                                let _ = client
+                                    .delete_item()
+                                    .table_name(USER_AGREEMENTS_TABLE)
+                                    .key("agreement_key", AttributeValue::S(agreement.to_string()))
+                                    .send()
+                                    .await;
+                            }
+                        }
+                    }
+                }
+            };
+
+            if let Ok(handle) = Handle::try_current() {
+                handle.spawn(cleanup);
+            } else if let Ok(rt) = Runtime::new() {
+                let _ = rt.block_on(cleanup);
+            }
+        }
+    }
+}

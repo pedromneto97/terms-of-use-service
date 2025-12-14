@@ -111,3 +111,118 @@ impl TermRepository for DynamoRepository {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use chrono::Utc;
+    use domain::{data::repository::TermRepository, entities::TermOfUse};
+
+    use crate::database::dynamodb::DynamoRepository;
+
+    async fn create_test_repository() -> DynamoRepository {
+        DynamoRepository::new().await
+    }
+
+    fn create_sample_term(id: i32, group: &str, version: u32) -> TermOfUse {
+        TermOfUse {
+            id,
+            group: group.to_string(),
+            url: format!("https://example.com/terms/{group}/v{version}"),
+            version,
+            info: Some(format!("Test term for {group} v{version}")),
+            created_at: Utc::now().naive_utc(),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_should_return_none_when_no_terms_exist() {
+        let repo = create_test_repository().await;
+
+        let result = repo.get_latest_term_for_group("nonexistent-group").await;
+
+        assert!(result.is_ok());
+        assert!(result.unwrap().is_none());
+    }
+
+    #[tokio::test]
+    async fn test_should_return_none_when_term_id_not_found() {
+        let repo = create_test_repository().await;
+
+        let result = repo.get_term_by_id(99999).await;
+
+        assert!(result.is_ok());
+        assert!(result.unwrap().is_none());
+    }
+
+    #[tokio::test]
+    async fn test_create_term_successful() {
+        let repo = create_test_repository().await;
+
+        let created_at = Utc::now().naive_utc();
+        let term = TermOfUse {
+            id: 0, // ID should be auto-generated
+            group: "test-group".to_string(),
+            url: "https://example.com/terms/v1".to_string(),
+            version: 1,
+            info: Some("Test term".to_string()),
+            created_at: created_at,
+        };
+
+        let result = repo.create_term(term).await.unwrap();
+
+        assert_eq!(result.group, "test-group");
+        assert_eq!(result.version, 1);
+        assert_eq!(result.info.unwrap(), "Test term");
+        assert_eq!(result.created_at, created_at);
+        assert!(result.id > 0);
+    }
+
+    #[tokio::test]
+    async fn test_get_term_by_id_retrieves_existing_term() {
+        let repo = create_test_repository().await;
+
+        let term = create_sample_term(0, "terms-of-service", 1);
+        let created_term = repo.create_term(term).await.unwrap();
+
+        let retrieved_term = repo
+            .get_term_by_id(created_term.id)
+            .await
+            .unwrap()
+            .expect("Term should exist");
+
+        assert_eq!(retrieved_term.id, created_term.id);
+        assert_eq!(retrieved_term.group, created_term.group);
+        assert_eq!(retrieved_term.version, created_term.version);
+        assert_eq!(retrieved_term.url, created_term.url);
+        assert_eq!(retrieved_term.info, created_term.info);
+        assert_eq!(
+            retrieved_term.created_at.and_utc().timestamp(),
+            created_term.created_at.and_utc().timestamp()
+        );
+    }
+
+    #[tokio::test]
+    async fn test_get_latest_term_for_group_returns_highest_version() {
+        let repo = create_test_repository().await;
+
+        let group = "cookie-policy";
+
+        // Create multiple versions
+        let term_v1 = create_sample_term(0, group, 1);
+        let term_v2 = create_sample_term(0, group, 2);
+        let term_v3 = create_sample_term(0, group, 3);
+
+        repo.create_term(term_v1).await.expect("v1 created");
+        repo.create_term(term_v2).await.expect("v2 created");
+        repo.create_term(term_v3).await.expect("v3 created");
+
+        let result = repo
+            .get_latest_term_for_group(group)
+            .await
+            .unwrap()
+            .expect("Latest term should exist");
+
+        assert_eq!(result.group, group);
+        assert_eq!(result.version, 3);
+    }
+}

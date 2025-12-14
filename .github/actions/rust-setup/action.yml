@@ -1,0 +1,54 @@
+name: "Rust Job Setup"
+description: "Composite action to prepare runner for Rust jobs: checkout, toolchain, cache and clippy"
+inputs:
+  package:
+    description: "Package to run clippy for"
+    required: true
+  features:
+    description: "Optional features string"
+    required: false
+    default: ""
+  all_features:
+    description: "Run with --all-features"
+    required: false
+    default: "false"
+runs:
+  using: "composite"
+  steps:
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+
+    - name: Cache cargo registry
+      uses: actions/cache@v5
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Cache target
+      uses: actions/cache@v5
+      with:
+        path: target
+        key: ${{ runner.os }}-cargo-target-${{ inputs.features }}-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Check formatting
+      shell: bash
+      run: cargo fmt --all -- --check
+
+    - name: Run clippy
+      shell: bash
+      run: |
+        set -e
+        CLIPPY_CMD=(cargo clippy -p "${{ inputs.package }}")
+        if [ "${{ inputs.all_features }}" = 'true' ]; then
+            CLIPPY_CMD+=(--all-features)
+        elif [ -n "${{ inputs.features }}" ]; then
+            CLIPPY_CMD+=(--features "${{ inputs.features }}")
+        fi
+        CLIPPY_CMD+=(-- -D warnings)
+        "${CLIPPY_CMD[@]}"
