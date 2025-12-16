@@ -80,58 +80,63 @@ mod tests {
     use domain::dto::AcceptedTermOfUseDTO;
     use domain::errors::TermsOfUseError;
 
-    fn client() -> Client {
+    fn dto() -> AcceptedTermOfUseDTO {
+        AcceptedTermOfUseDTO {
+            term_id: 1,
+            user_id: 2,
+            group: "privacy-policy".to_string(),
+        }
+    }
+
+    #[tokio::test]
+    async fn publish_returns_internal_error_on_send_failure() {
         let config = Config::builder()
             .behavior_version(BehaviorVersion::latest())
             .credentials_provider(SharedCredentialsProvider::new(Credentials::for_tests()))
             .region(Region::new("us-east-1"))
             .build();
 
-        Client::from_conf(config)
-    }
+        let client = Client::from_conf(config);
 
-    #[tokio::test]
-    async fn new_builds_topic_arn_from_env() {
-        unsafe {
-            std::env::set_var("AWS_ACCOUNT_ID", "123456789012");
-            std::env::set_var("AWS_REGION", "us-east-1");
-            std::env::set_var("SNS_TOPIC_NAME", "terms-agreements");
-        }
-
-        let publisher = SNSPublisher::new().await;
-
-        assert_eq!(
-            publisher.topic_arn,
-            "arn:aws:sns:us-east-1:123456789012:terms-agreements"
-        );
-
-        unsafe {
-            std::env::remove_var("AWS_ACCOUNT_ID");
-            std::env::remove_var("AWS_REGION");
-            std::env::remove_var("SNS_TOPIC_NAME");
-        }
-    }
-
-    #[tokio::test]
-    async fn publish_returns_internal_error_on_send_failure() {
         let publisher = SNSPublisher {
-            client: client(),
+            client: client,
             topic_arn: "arn:aws:sns:us-east-1:123456789012:terms-agreements".to_string(),
         };
 
-        let dto = AcceptedTermOfUseDTO {
-            term_id: 1,
-            user_id: 2,
-            group: "privacy-policy".to_string(),
-        };
+        let res = publisher.publish_agreement(dto()).await;
 
-        let res = publisher.publish_agreement(dto).await;
+        let err = res.err().unwrap();
 
-        assert!(res.is_err());
+        assert!(matches!(err, TermsOfUseError::InternalServerError));
+    }
 
-        match res.err().unwrap() {
-            TermsOfUseError::InternalServerError => {}
-            other => panic!("expected InternalServerError, got {:?}", other),
-        }
+    #[tokio::test]
+    async fn from_client_can_be_used_to_inject_custom_client() {
+        let publisher = SNSPublisher::new().await;
+
+        let account_id = std::env::var("AWS_ACCOUNT_ID").expect("AWS_ACCOUNT_ID must be set");
+        let region = std::env::var("AWS_REGION").expect("AWS_REGION must be set");
+        let topic_name = std::env::var("SNS_TOPIC_NAME").expect("SNS_TOPIC_NAME must be set");
+
+        assert_eq!(
+            publisher.topic_arn,
+            format!("arn:aws:sns:{region}:{account_id}:{topic_name}")
+        );
+
+        publisher
+            .client
+            .create_topic()
+            .name(&topic_name)
+            .send()
+            .await
+            .unwrap();
+
+        let res = publisher.publish_agreement(dto()).await;
+
+        assert!(
+            res.is_ok(),
+            "Expected successful publish to LocalStack SNS, got: {:?}",
+            res
+        );
     }
 }

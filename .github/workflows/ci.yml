@@ -31,10 +31,10 @@ jobs:
         uses: ./.github/actions/rust-setup
         with:
           package: outbound
-          features: "postgres, s3, gcloud, redis, sns, kafka"
+          features: "postgres, s3, gcloud, redis kafka"
 
       - name: Run outbound tests for feature
-        run: cargo test -p outbound --features postgres, s3, gcloud, redis, sns, kafka
+        run: cargo test -p outbound --features postgres, s3, gcloud, redis, kafka
 
   inbound-features:
     needs: domain
@@ -88,9 +88,57 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
         run: cargo test -p outbound --features dynamodb
 
+  outbound-sns:
+    needs: domain
+    runs-on: ubuntu-latest
+    services:
+      localstack:
+        image: localstack/localstack:latest
+        ports:
+          - 4566:4566
+        env:
+          SERVICES: sns
+          EDGE_PORT: 4566
+          AWS_DEFAULT_REGION: us-east-1
+          AWS_ACCOUNT_ID: 000000000000
+          SNS_TOPIC_NAME: test-topic
+          AWS_SECRET_ACCESS_KEY: fake
+          AWS_ACCESS_KEY_ID: fake
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup
+        uses: ./.github/actions/rust-setup
+        with:
+          package: outbound
+          features: "sns"
+
+      - name: Wait for LocalStack (SNS) on 4566
+        run: |
+          for i in $(seq 1 60); do
+            if bash -c "</dev/tcp/localhost/4566" >/dev/null 2>&1; then
+              echo "LocalStack is available"
+              break
+            fi
+            echo "Waiting for LocalStack... ($i)"
+            sleep 1
+          done
+
+      - name: Run outbound SNS tests
+        env:
+          AWS_ENDPOINT_URL: http://localhost:4566
+          AWS_ACCESS_KEY_ID: fake
+          AWS_SECRET_ACCESS_KEY: fake
+          AWS_REGION: us-east-1
+          AWS_ACCOUNT_ID: 000000000000
+        run: cargo test -p outbound --features sns
+
   terms-tests:
     needs:
       - outbound-dynamodb
+      - outbound-sns
       - outbound-features
       - inbound-features
     runs-on: ubuntu-latest
