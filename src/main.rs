@@ -18,12 +18,6 @@ mod inbound;
 ))]
 compile_error!("Features 'dynamodb' and 'postgres' cannot be enabled at the same time.");
 
-#[cfg(not(any(feature = "dynamodb", feature = "postgres", test, clippy, rustfmt)))]
-compile_error!("Either feature 'dynamodb' or 'postgres' must be enabled.");
-
-#[cfg(not(any(feature = "s3", feature = "gcloud", test, clippy, rustfmt)))]
-compile_error!("No storage feature enabled. Please enable at least one: 's3' or 'gcloud'.");
-
 #[cfg(all(feature = "s3", feature = "gcloud", not(any(test, clippy, rustfmt))))]
 compile_error!("Multiple storage features enabled. Please enable only one: 's3' or 'gcloud'.");
 
@@ -37,7 +31,8 @@ async fn get_repository() -> Arc<dyn DatabaseRepository> {
     #[cfg(feature = "postgres")]
     return Arc::new(outbound::PostgresRepository::new().await);
 
-    unreachable!("No database feature (postgres or dynamodb) enabled")
+    #[cfg(not(any(feature = "dynamodb", feature = "postgres", test, clippy, rustfmt)))]
+    compile_error!("Either feature 'dynamodb' or 'postgres' must be enabled.");
 }
 
 async fn get_cache() -> impl CacheService {
@@ -64,7 +59,8 @@ async fn get_storage() -> Arc<dyn StorageService> {
     #[cfg(feature = "gcloud")]
     return Arc::new(outbound::GoogleCloudStorage::new().await);
 
-    unreachable!("No storage feature (s3 or gcloud) enabled")
+    #[cfg(not(any(feature = "s3", feature = "gcloud", test, clippy, rustfmt)))]
+    compile_error!("No storage feature enabled. Please enable at least one: 's3' or 'gcloud'.");
 }
 
 #[tokio::main]
