@@ -1,0 +1,49 @@
+[package]
+name = "inbound"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+actix-multipart = { version = "0.7.2", optional = true }
+actix-web = { version = "4", optional = true }
+domain = { path = "../domain" }
+init-tracing-opentelemetry = { version = "0.34.0", features = [
+    "otlp",
+    "metrics",
+    "tracing_subscriber_ext",
+], optional = true }
+opentelemetry-instrumentation-actix-web = { version = "0.23.0", features = [
+    "metrics",
+], optional = true }
+prost = { version = "0.14", optional = true }
+serde = { version = "1", features = ["derive"], optional = true }
+tokio = { version = "1", features = ["fs"], optional = true }
+tonic = { version = "0.14", features = ["zstd"], optional = true }
+tonic-prost = { version = "0.14", optional = true }
+tonic-tracing-opentelemetry = { version = "0.32.0", optional = true }
+tracing = { version = "0.1" }
+uuid = { version = "1.19", optional = true, features = ["v4"] }
+
+[build-dependencies]
+tonic-prost-build = { version = "0.14", optional = true }
+
+[dev-dependencies]
+serde_json = "1.0"
+
+[features]
+grpc = [
+    "tonic",
+    "prost",
+    "tonic-prost",
+    "tonic-prost-build",
+    "tonic-tracing-opentelemetry",
+    "uuid",
+    "tokio",
+    "init-tracing-opentelemetry",
+]
+actix-web = [
+    "dep:actix-web",
+    "dep:actix-multipart",
+    "dep:opentelemetry-instrumentation-actix-web",
+    "dep:serde",
+]

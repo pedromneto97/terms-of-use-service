@@ -5,11 +5,9 @@ use domain::data::{
     service::{CacheService, PublisherService, StorageService},
 };
 use dotenvy::dotenv;
-
-use crate::core::Config;
+use inbound::Config;
 
 mod core;
-mod inbound;
 
 #[cfg(all(
     feature = "dynamodb",
@@ -77,5 +75,11 @@ async fn main() -> Result<(), impl Error> {
 
     let config = Config::new(repository, Arc::new(cache), storage, Arc::new(publisher)).await;
 
-    inbound::start_server(config).await
+    #[cfg(feature = "actix-web")]
+    return inbound::start_actix_server(config).await;
+
+    #[cfg(feature = "grpc")]
+    return inbound::start_grpc_server(config).await;
+
+    compile_error!("Either feature 'actix-web' or 'grpc' must be enabled.");
 }

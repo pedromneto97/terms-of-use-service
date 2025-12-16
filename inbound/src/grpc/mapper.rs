@@ -1,7 +1,7 @@
 use domain::{entities::TermOfUse, errors::TermsOfUseError};
 use tonic::Status;
 
-use crate::inbound::grpc::{CreateTermResponse, get_latest_terms_response::TermContent};
+use crate::grpc::{CreateTermResponse, get_latest_terms_response::TermContent};
 
 pub trait ToStatus {
     fn to_status(&self) -> Status;

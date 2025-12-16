@@ -4,24 +4,14 @@ version = "0.1.0"
 edition = "2024"
 
 [workspace]
-members = ["domain", "migration", "outbound"]
+members = ["domain", "inbound", "migration", "outbound"]
 
 [dependencies]
-actix-multipart = { version = "0.7.2", optional = true }
-actix-web = { version = "4", optional = true }
-chrono = { version = "0.4", features = ["serde"] }
 domain = { path = "domain" }
 dotenvy = "0.15.7"
-init-tracing-opentelemetry = { version = "0.34.0", features = [
-    "otlp",
-    "metrics",
-    "tracing_subscriber_ext",
-], optional = true }
+inbound = { path = "inbound" }
 opentelemetry = { version = "0.31", optional = true }
 opentelemetry-appender-tracing = { version = "0.31.0", optional = true }
-opentelemetry-instrumentation-actix-web = { version = "0.23.0", features = [
-    "metrics",
-], optional = true }
 opentelemetry_sdk = { version = "0.31", features = [
     "rt-tokio",
     "metrics",
@@ -31,37 +21,20 @@ opentelemetry-otlp = { version = "0.31", features = [
     "metrics",
 ], optional = true }
 outbound = { path = "outbound" }
-prost = { version = "0.14", optional = true }
-serde = { version = "1", features = ["derive"], optional = true }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
-tonic = { version = "0.14", features = ["zstd"], optional = true }
-tonic-prost = { version = "0.14", optional = true }
-tonic-tracing-opentelemetry = { version = "0.32.0", optional = true }
 tracing = { version = "0.1" }
 tracing-subscriber = { version = "0.3", features = [
     "env-filter",
 ], optional = true }
 tracing-opentelemetry = { version = "0.32", optional = true }
-uuid = { version = "1.19.0", optional = true, features = ["v4"] }
 
-[build-dependencies]
-tonic-prost-build = { version = "0.14", optional = true }
-
-[dev-dependencies]
-serde_json = "1.0"
 
 [features]
 default = ["otel"]
+
 # Web server
-actix-web = ["dep:actix-web", "dep:serde", "dep:actix-multipart"]
-grpc = [
-    "tonic",
-    "prost",
-    "tonic-prost-build",
-    "tonic-prost",
-    "uuid",
-    "tokio/fs",
-]
+actix-web = ["inbound/actix-web"]
+grpc = ["inbound/grpc"]
 
 # Databases
 postgres = ["outbound/postgres"]
@@ -82,10 +55,7 @@ otel = [
     "opentelemetry-otlp",
     "tracing-subscriber",
     "tracing-opentelemetry",
-    "opentelemetry-instrumentation-actix-web",
     "opentelemetry-appender-tracing",
-    "init-tracing-opentelemetry",
-    "tonic-tracing-opentelemetry",
 ]
 
 # Publishers

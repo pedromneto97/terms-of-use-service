@@ -10,8 +10,8 @@ use tonic::{Request, Response, Status, Streaming};
 use tracing::{debug, error, info};
 
 use crate::{
-    core::Config,
-    inbound::grpc::{
+    config::Config,
+    grpc::{
         CreateConsentRequest, CreateTermRequest, CreateTermResponse, GetLatestTermsRequest,
         GetLatestTermsResponse, HasConsentResponse, HasConsentedRequest,
         create_term_request::{CreateTermContent, CreateTermData},

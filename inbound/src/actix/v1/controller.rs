@@ -9,14 +9,14 @@ use domain::use_cases::{
 };
 
 use crate::{
-    core::Config,
-    inbound::actix::{
+    actix::{
         error::response::ProblemDetails,
         v1::{
             payload::{CreateAgreementPayload, CreateTermForm, GetLatestTermPayload},
             response::{HasConsentedResponse, TermOfUseResponse, TermOfUseUrlResponse},
         },
     },
+    config::Config,
 };
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
