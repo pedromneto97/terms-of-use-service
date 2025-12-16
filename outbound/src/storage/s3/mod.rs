@@ -124,21 +124,20 @@ mod tests {
     use super::*;
     use aws_credential_types::{Credentials, provider::SharedCredentialsProvider};
     use aws_types::region::Region;
+    use tokio::fs;
 
-    fn test_client() -> aws_sdk_s3::Client {
+    fn build_storage(endpoint_url: Option<&str>) -> S3Storage {
         let config = aws_sdk_s3::Config::builder()
             .behavior_version(BehaviorVersion::latest())
             .credentials_provider(SharedCredentialsProvider::new(Credentials::for_tests()))
             .region(Region::new("us-east-1"))
             .build();
 
-        aws_sdk_s3::Client::from_conf(config)
-    }
+        let client = aws_sdk_s3::Client::from_conf(config);
 
-    fn build_storage(endpoint_url: Option<&str>) -> S3Storage {
         S3Storage {
             bucket_name: "test-bucket".to_string(),
-            client: test_client(),
+            client: client,
             endpoint_url: endpoint_url.map(String::from),
         }
     }
@@ -165,5 +164,135 @@ mod tests {
             .expect("url should be built");
 
         assert_eq!(url, "https://test-bucket.s3.amazonaws.com/uploads/file.pdf");
+    }
+
+    #[tokio::test]
+    async fn upload_file_fails_without_real_s3() {
+        let storage = build_storage(None);
+
+        let temp_file = std::env::temp_dir().join("test-upload-fail.txt");
+        fs::write(&temp_file, "test content").await.unwrap();
+
+        let result = storage.upload_file(&temp_file, "text/plain").await;
+
+        fs::remove_file(&temp_file).await.ok();
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn should_upload_file_successfully() {
+        let storage = S3Storage::new().await;
+
+        // Create bucket first
+        storage
+            .client
+            .create_bucket()
+            .bucket(&storage.bucket_name)
+            .send()
+            .await
+            .unwrap();
+
+        // Create a temporary test file
+        let temp_file = std::env::temp_dir().join("test-upload.txt");
+        fs::write(&temp_file, b"Hello S3!").await.unwrap();
+
+        // Upload file
+        let result = storage.upload_file(&temp_file, "text/plain").await.unwrap();
+
+        assert!(
+            result.ends_with(".txt"),
+            "Key should end with .txt extension"
+        );
+
+        // Verify file exists in S3
+        let _ = storage
+            .client
+            .head_object()
+            .bucket(&storage.bucket_name)
+            .key(&result)
+            .send()
+            .await
+            .unwrap();
+
+        // Clean up
+        fs::remove_file(&temp_file).await.ok();
+        storage.delete_file(&result).await.ok();
+    }
+
+    #[tokio::test]
+    async fn should_upload_pdf_file_successfully() {
+        let storage = S3Storage::new().await;
+
+        // Create bucket first
+        storage
+            .client
+            .create_bucket()
+            .bucket(&storage.bucket_name)
+            .send()
+            .await
+            .ok();
+
+        // Create a temporary test PDF file
+        let temp_file = std::env::temp_dir().join("test-upload.pdf");
+
+        fs::write(&temp_file, "%PDF-1.4 test content")
+            .await
+            .unwrap();
+
+        // Upload file
+        let result = storage
+            .upload_file(&temp_file, "application/pdf")
+            .await
+            .unwrap();
+
+        assert!(
+            result.ends_with(".pdf"),
+            "Key should end with .pdf extension"
+        );
+
+        // Clean up
+        fs::remove_file(&temp_file).await.ok();
+        storage.delete_file(&result).await.ok();
+    }
+
+    #[tokio::test]
+    async fn should_delete_file_successfully() {
+        let storage = S3Storage::new().await;
+
+        // Create bucket first
+        storage
+            .client
+            .create_bucket()
+            .bucket(&storage.bucket_name)
+            .send()
+            .await
+            .ok();
+
+        // Create and upload a test file
+        let temp_file = std::env::temp_dir().join("test-delete.txt");
+        fs::write(&temp_file, "test content for deletion")
+            .await
+            .unwrap();
+
+        let key = storage.upload_file(&temp_file, "text/plain").await.unwrap();
+
+        storage.delete_file(&key).await.unwrap();
+
+        // Verify file no longer exists
+        let head_result = storage
+            .client
+            .head_object()
+            .bucket(&storage.bucket_name)
+            .key(&key)
+            .send()
+            .await;
+
+        assert!(
+            head_result.is_err(),
+            "File should not exist in S3 after deletion"
+        );
+
+        // Clean up
+        fs::remove_file(&temp_file).await.ok();
     }
 }
