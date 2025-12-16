@@ -1,20 +1,25 @@
-use outbound::{AppRepository, Cache, Publisher, Storage};
+use std::sync::Arc;
 
-#[derive(Clone, Debug)]
+use domain::data::{
+    repository::DatabaseRepository,
+    service::{CacheService, PublisherService, StorageService},
+};
+
+#[derive(Clone)]
 pub struct Config {
-    pub repository: AppRepository,
-    pub cache: Cache,
-    pub storage: Storage,
-    pub publisher: Publisher,
+    pub repository: Arc<dyn DatabaseRepository>,
+    pub cache: Arc<dyn CacheService>,
+    pub storage: Arc<dyn StorageService>,
+    pub publisher: Arc<dyn PublisherService>,
 }
 
 impl Config {
-    pub async fn new() -> Self {
-        let repository = AppRepository::new().await;
-        let cache = Cache::new().await;
-        let storage = Storage::new().await;
-        let publisher = Publisher::new().await;
-
+    pub async fn new(
+        repository: Arc<dyn DatabaseRepository>,
+        cache: Arc<dyn CacheService>,
+        storage: Arc<dyn StorageService>,
+        publisher: Arc<dyn PublisherService>,
+    ) -> Self {
         Config {
             repository,
             cache,

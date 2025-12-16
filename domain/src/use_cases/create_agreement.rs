@@ -1,6 +1,6 @@
 use crate::{
     data::{
-        repository::{TermRepository, UserAgreementRepository},
+        repository::DatabaseRepository,
         service::{CacheService, PublisherService},
     },
     dto::AcceptedTermOfUseDTO,
@@ -8,14 +8,10 @@ use crate::{
 };
 
 #[tracing::instrument(skip(repository, cache, publisher, user_id, term_id))]
-pub async fn create_user_agreement_use_case<
-    R: TermRepository + UserAgreementRepository,
-    C: CacheService,
-    P: PublisherService,
->(
-    repository: &R,
-    cache: &C,
-    publisher: &P,
+pub async fn create_user_agreement_use_case(
+    repository: &dyn DatabaseRepository,
+    cache: &dyn CacheService,
+    publisher: &dyn PublisherService,
     user_id: i32,
     term_id: i32,
 ) -> Result<()> {

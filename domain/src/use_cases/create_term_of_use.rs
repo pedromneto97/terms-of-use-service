@@ -13,10 +13,10 @@ use crate::{
 };
 
 #[tracing::instrument(skip(repository, upload_service, cache_service, term, file_path))]
-pub async fn create_term_of_use_use_case<R: TermRepository, S: StorageService, C: CacheService>(
-    repository: &R,
-    upload_service: &S,
-    cache_service: &C,
+pub async fn create_term_of_use_use_case(
+    repository: &dyn TermRepository,
+    upload_service: &dyn StorageService,
+    cache_service: &dyn CacheService,
     term: CreateTermOfUseDTO,
     file_path: &Path,
     content_type: &str,

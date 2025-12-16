@@ -1,5 +1,6 @@
 use std::path::Path;
 
+use async_trait::async_trait;
 use aws_config::BehaviorVersion;
 use aws_sdk_s3::{config::Builder as S3ConfigBuilder, primitives::ByteStream};
 use domain::{
@@ -52,6 +53,7 @@ impl S3Storage {
     }
 }
 
+#[async_trait]
 impl StorageService for S3Storage {
     async fn upload_file(&self, path: &Path, content_type: &str) -> Result<String> {
         let body = ByteStream::from_path(path).await.map_err(|err| {

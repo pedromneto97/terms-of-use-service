@@ -8,10 +8,10 @@ use crate::{
 };
 
 #[tracing::instrument(skip(repository, cache_service, upload_service, group))]
-pub async fn get_latest_term_use_case<R: TermRepository, C: CacheService, S: StorageService>(
-    repository: &R,
-    cache_service: &C,
-    upload_service: &S,
+pub async fn get_latest_term_use_case(
+    repository: &dyn TermRepository,
+    cache_service: &dyn CacheService,
+    upload_service: &dyn StorageService,
     group: &str,
 ) -> Result<TermOfUse> {
     let term = cache_service.get_latest_term_for_group(group).await;

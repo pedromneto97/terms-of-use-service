@@ -37,8 +37,13 @@ async fn has_user_consented_to_latest_term(
 ) -> Result<HttpResponse, ProblemDetails> {
     let (group, user_id) = group.into_inner();
 
-    let term = has_user_agreed_to_term_use_case(&config.repository, &config.cache, user_id, &group)
-        .await?;
+    let term = has_user_agreed_to_term_use_case(
+        config.repository.as_ref(),
+        config.cache.as_ref(),
+        user_id,
+        &group,
+    )
+    .await?;
 
     Ok(HttpResponse::Ok().json(HasConsentedResponse {
         has_consented: term,
@@ -54,9 +59,9 @@ async fn create_agreement(
     let CreateAgreementPayload { user_id, term_id } = body.into_inner();
 
     create_user_agreement_use_case(
-        &config.repository,
-        &config.cache,
-        &config.publisher,
+        config.repository.as_ref(),
+        config.cache.as_ref(),
+        config.publisher.as_ref(),
         user_id,
         term_id,
     )
@@ -85,9 +90,9 @@ async fn create_term_of_use(
     }
 
     create_term_of_use_use_case(
-        &config.repository,
-        &config.storage,
-        &config.cache,
+        config.repository.as_ref(),
+        config.storage.as_ref(),
+        config.cache.as_ref(),
         data.into_inner().into(),
         file.file.path(),
         &content_type,
@@ -104,8 +109,13 @@ async fn get_latest_term_for_group(
     payload: web::Query<GetLatestTermPayload>,
     config: web::Data<Config>,
 ) -> Result<HttpResponse, ProblemDetails> {
-    let term = get_latest_term_use_case(&config.repository, &config.cache, &config.storage, &group)
-        .await?;
+    let term = get_latest_term_use_case(
+        config.repository.as_ref(),
+        config.cache.as_ref(),
+        config.storage.as_ref(),
+        &group,
+    )
+    .await?;
 
     if payload.only_url {
         return Ok(HttpResponse::Ok().json(TermOfUseUrlResponse::from(term)));

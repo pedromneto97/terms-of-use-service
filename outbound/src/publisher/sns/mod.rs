@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use aws_config::BehaviorVersion;
 use aws_sdk_sns::{Client, config::Builder};
 use domain::{
@@ -41,6 +42,7 @@ impl SNSPublisher {
     }
 }
 
+#[async_trait]
 impl PublisherService for SNSPublisher {
     #[tracing::instrument(skip(self, dto))]
     async fn publish_agreement(&self, dto: AcceptedTermOfUseDTO) -> Result<()> {

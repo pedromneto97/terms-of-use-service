@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod tests {
+    use async_trait::async_trait;
     use chrono::Utc;
     use mockall::predicate::*;
 
@@ -19,6 +20,7 @@ mod tests {
         agreement_repo: MockUserAgreementRepository,
     }
 
+    #[async_trait]
     impl crate::data::repository::TermRepository for MockCombinedRepository {
         async fn get_latest_term_for_group(&self, group: &str) -> Result<Option<TermOfUse>> {
             self.term_repo.get_latest_term_for_group(group).await
@@ -33,6 +35,7 @@ mod tests {
         }
     }
 
+    #[async_trait]
     impl crate::data::repository::UserAgreementRepository for MockCombinedRepository {
         async fn has_user_agreed_to_term(&self, user_id: i32, term_id: i32) -> Result<bool> {
             self.agreement_repo
@@ -46,6 +49,8 @@ mod tests {
                 .await
         }
     }
+
+    impl crate::data::repository::DatabaseRepository for MockCombinedRepository {}
 
     #[tokio::test]
     async fn test_has_agreed_from_cache_true() {

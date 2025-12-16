@@ -1,6 +1,9 @@
+use async_trait::async_trait;
+
 use crate::{entities::TermOfUse, errors::Result};
 
 #[cfg_attr(test, mockall::automock)]
+#[async_trait]
 pub trait CacheService: Send + Sync {
     async fn find_user_agreement(&self, user_id: i32, group: &str) -> Result<Option<bool>>;
 

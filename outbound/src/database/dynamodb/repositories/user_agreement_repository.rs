@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use aws_sdk_dynamodb::types::AttributeValue;
 use chrono::Utc;
 use domain::{
@@ -8,6 +9,7 @@ use tracing::error;
 
 use crate::database::dynamodb::{DynamoRepository, model::USER_AGREEMENTS_TABLE};
 
+#[async_trait]
 impl UserAgreementRepository for DynamoRepository {
     #[tracing::instrument(skip(self, user_id, term_id))]
     async fn has_user_agreed_to_term(&self, user_id: i32, term_id: i32) -> Result<bool> {

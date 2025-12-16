@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use domain::{data::service::PublisherService, dto::AcceptedTermOfUseDTO, errors::Result};
 
 #[derive(Clone, Debug)]
@@ -9,6 +10,7 @@ impl NoopPublisher {
     }
 }
 
+#[async_trait]
 impl PublisherService for NoopPublisher {
     async fn publish_agreement(&self, _: AcceptedTermOfUseDTO) -> Result<()> {
         Ok(())

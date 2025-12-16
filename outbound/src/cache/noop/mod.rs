@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use domain::{data::service::CacheService, entities::TermOfUse, errors::Result};
 
 #[derive(Clone, Debug)]
@@ -9,6 +10,7 @@ impl NoopCache {
     }
 }
 
+#[async_trait]
 impl CacheService for NoopCache {
     async fn find_user_agreement(&self, _user_id: i32, _group: &str) -> Result<Option<bool>> {
         Ok(None)
