@@ -80,7 +80,7 @@ jobs:
           AWS_ACCESS_KEY_ID: fake
           AWS_SECRET_ACCESS_KEY: fake
           AWS_REGION: us-east-1
-          AWS_ACCOUNT_ID: 000000000000
+          AWS_ACCOUNT_ID: "000000000000"
           S3_BUCKET_NAME: test-bucket
           SNS_TOPIC_NAME: test-topic
         run: cargo test -p outbound --all-features
