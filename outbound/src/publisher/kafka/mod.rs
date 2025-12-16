@@ -143,4 +143,18 @@ mod tests {
             other => panic!("expected InternalServerError, got {:?}", other),
         }
     }
+
+    #[tokio::test]
+    #[test_log::test]
+    async fn should_publish_agreement_successfully() {
+        let publisher = KafkaPublisher::new().await;
+
+        let dto = AcceptedTermOfUseDTO {
+            term_id: 1,
+            user_id: 2,
+            group: "privacy-policy".to_string(),
+        };
+
+        publisher.publish_agreement(dto).await.unwrap();
+    }
 }
