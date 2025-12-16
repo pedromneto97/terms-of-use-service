@@ -21,21 +21,6 @@ jobs:
       - name: Run domain tests
         run: cargo test -p domain --all-features
 
-  outbound-features:
-    needs: domain
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Setup
-        uses: ./.github/actions/rust-setup
-        with:
-          package: outbound
-          features: "postgres,s3,gcloud,redis,kafka"
-
-      - name: Run outbound tests for feature
-        run: cargo test -p outbound --features postgres,s3,gcloud,redis,kafka
-
   inbound-features:
     needs: domain
     runs-on: ubuntu-latest
@@ -52,45 +37,7 @@ jobs:
       - name: Run outbound tests for feature
         run: cargo test -p inbound --all-features
 
-  outbound-dynamodb:
-    needs: domain
-    runs-on: ubuntu-latest
-    services:
-      dynamodb:
-        image: amazon/dynamodb-local:latest
-        env:
-          AWS_DEFAULT_REGION: us-east-1
-        ports:
-          - 8000:8000
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Setup
-        uses: ./.github/actions/rust-setup
-        with:
-          package: outbound
-          features: dynamodb
-
-      - name: Wait for DynamoDB
-        run: |
-          for i in $(seq 1 30); do
-            if bash -c "</dev/tcp/localhost/8000" >/dev/null 2>&1; then
-              echo "DynamoDB is available"
-              break
-            fi
-            echo "Waiting for DynamoDB... ($i)"
-            sleep 1
-          done
-
-      - name: Run DynamoDB outbound tests
-        env:
-          AWS_ENDPOINT_URL: http://localhost:8000
-          AWS_ACCESS_KEY_ID: test
-          AWS_SECRET_ACCESS_KEY: test
-          AWS_DEFAULT_REGION: us-east-1
-        run: cargo test -p outbound --features dynamodb
-
-  outbound-sns:
+  outbound-features:
     needs: domain
     runs-on: ubuntu-latest
     services:
@@ -99,13 +46,12 @@ jobs:
         ports:
           - 4566:4566
         env:
-          SERVICES: sns
+          SERVICES: s3,sns,dynamodb
           EDGE_PORT: 4566
           AWS_DEFAULT_REGION: us-east-1
-          AWS_ACCOUNT_ID: 000000000000
-          SNS_TOPIC_NAME: test-topic
           AWS_SECRET_ACCESS_KEY: fake
           AWS_ACCESS_KEY_ID: fake
+          AWS_ACCOUNT_ID: 000000000000
 
     steps:
       - name: Checkout
@@ -115,9 +61,9 @@ jobs:
         uses: ./.github/actions/rust-setup
         with:
           package: outbound
-          features: "sns"
+          all-features: true
 
-      - name: Wait for LocalStack (SNS) on 4566
+      - name: Wait for LocalStack on 4566
         run: |
           for i in $(seq 1 60); do
             if bash -c "</dev/tcp/localhost/4566" >/dev/null 2>&1; then
@@ -128,20 +74,19 @@ jobs:
             sleep 1
           done
 
-      - name: Run outbound SNS tests
+      - name: Run outbound AWS tests
         env:
           AWS_ENDPOINT_URL: http://localhost:4566
           AWS_ACCESS_KEY_ID: fake
           AWS_SECRET_ACCESS_KEY: fake
           AWS_REGION: us-east-1
           AWS_ACCOUNT_ID: 000000000000
+          S3_BUCKET_NAME: test-bucket
           SNS_TOPIC_NAME: test-topic
-        run: cargo test -p outbound --features sns
+        run: cargo test -p outbound --all-features
 
   terms-tests:
     needs:
-      - outbound-dynamodb
-      - outbound-sns
       - outbound-features
       - inbound-features
     runs-on: ubuntu-latest
