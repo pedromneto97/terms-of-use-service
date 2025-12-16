@@ -1,4 +1,4 @@
-use actix_web::{HttpResponse, http::StatusCode};
+use actix_web::http::StatusCode;
 use serde::Serialize;
 use std::fmt;
 
@@ -38,21 +38,6 @@ pub struct ProblemDetails {
 }
 
 impl ProblemDetails {
-    /// Creates a new ProblemDetails with the required fields
-    pub fn new(
-        problem_type: impl Into<String>,
-        title: impl Into<String>,
-        status: StatusCode,
-    ) -> Self {
-        Self {
-            problem_type: problem_type.into(),
-            title: title.into(),
-            status: status.as_u16(),
-            detail: None,
-            instance: None,
-        }
-    }
-
     /// Creates a ProblemDetails with the "about:blank" type, which indicates
     /// the problem has no additional semantics beyond that of the HTTP status code.
     pub fn blank(status: StatusCode) -> Self {
@@ -75,22 +60,6 @@ impl ProblemDetails {
         self.detail = Some(detail.into());
         self
     }
-
-    /// Sets the instance field
-    pub fn with_instance(mut self, instance: impl Into<String>) -> Self {
-        self.instance = Some(instance.into());
-        self
-    }
-
-    /// Converts the ProblemDetails into an HttpResponse with the correct
-    /// Content-Type header (application/problem+json)
-    pub fn into_response(self) -> HttpResponse {
-        let status = StatusCode::from_u16(self.status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
-
-        HttpResponse::build(status)
-            .content_type("application/problem+json")
-            .json(self)
-    }
 }
 
 /// Convenience functions for common HTTP error responses
@@ -100,39 +69,14 @@ impl ProblemDetails {
         Self::blank(StatusCode::BAD_REQUEST)
     }
 
-    /// Creates a 401 Unauthorized problem
-    pub fn unauthorized() -> Self {
-        Self::blank(StatusCode::UNAUTHORIZED)
-    }
-
-    /// Creates a 403 Forbidden problem
-    pub fn forbidden() -> Self {
-        Self::blank(StatusCode::FORBIDDEN)
-    }
-
     /// Creates a 404 Not Found problem
     pub fn not_found() -> Self {
         Self::blank(StatusCode::NOT_FOUND)
     }
 
-    /// Creates a 409 Conflict problem
-    pub fn conflict() -> Self {
-        Self::blank(StatusCode::CONFLICT)
-    }
-
-    /// Creates a 422 Unprocessable Entity problem
-    pub fn unprocessable_entity() -> Self {
-        Self::blank(StatusCode::UNPROCESSABLE_ENTITY)
-    }
-
     /// Creates a 500 Internal Server Error problem
     pub fn internal_server_error() -> Self {
         Self::blank(StatusCode::INTERNAL_SERVER_ERROR)
-    }
-
-    /// Creates a 503 Service Unavailable problem
-    pub fn service_unavailable() -> Self {
-        Self::blank(StatusCode::SERVICE_UNAVAILABLE)
     }
 }
 
