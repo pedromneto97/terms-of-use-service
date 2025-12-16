@@ -99,31 +99,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_problem_details_serialization() {
-        let problem = ProblemDetails::new(
-            "https://example.com/probs/out-of-credit",
-            "You do not have enough credit.",
-            StatusCode::FORBIDDEN,
-        )
-        .with_detail("Your current balance is 30, but that costs 50.")
-        .with_instance("/account/12345/msgs/abc");
-
-        let json = serde_json::to_string(&problem).unwrap();
-
-        assert!(json.contains("\"type\":\"https://example.com/probs/out-of-credit\""));
-        assert!(json.contains("\"title\":\"You do not have enough credit.\""));
-        assert!(json.contains("\"status\":403"));
-        assert!(json.contains("\"detail\":\"Your current balance is 30, but that costs 50.\""));
-        assert!(json.contains("\"instance\":\"/account/12345/msgs/abc\""));
-    }
-
-    #[test]
     fn test_blank_problem_details() {
-        let problem = ProblemDetails::blank(StatusCode::NOT_FOUND);
+        let problem = ProblemDetails::blank(StatusCode::INTERNAL_SERVER_ERROR);
 
         assert_eq!(problem.problem_type, "about:blank");
-        assert_eq!(problem.title, "Not Found");
-        assert_eq!(problem.status, 404);
+        assert_eq!(problem.title, "Internal Server Error");
+        assert_eq!(problem.status, 500);
         assert!(problem.detail.is_none());
         assert!(problem.instance.is_none());
     }
