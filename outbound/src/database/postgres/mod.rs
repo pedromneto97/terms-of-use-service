@@ -42,6 +42,11 @@ impl PostgresRepository {
 
         Self { db: database }
     }
+
+    #[cfg(test)]
+    pub fn from_connection(database: DatabaseConnection) -> Self {
+        Self { db: database }
+    }
 }
 
 impl DatabaseRepository for PostgresRepository {}
