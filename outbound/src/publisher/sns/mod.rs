@@ -111,7 +111,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn from_client_can_be_used_to_inject_custom_client() {
+    async fn should_publish_agreement_successfully() {
         let publisher = SNSPublisher::new().await;
 
         let account_id = std::env::var("AWS_ACCOUNT_ID").expect("AWS_ACCOUNT_ID must be set");
