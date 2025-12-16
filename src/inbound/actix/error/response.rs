@@ -1,4 +1,4 @@
-use actix_web::{HttpResponse, http::StatusCode};
+use actix_web::http::StatusCode;
 use serde::Serialize;
 use std::fmt;
 
@@ -38,21 +38,6 @@ pub struct ProblemDetails {
 }
 
 impl ProblemDetails {
-    /// Creates a new ProblemDetails with the required fields
-    pub fn new(
-        problem_type: impl Into<String>,
-        title: impl Into<String>,
-        status: StatusCode,
-    ) -> Self {
-        Self {
-            problem_type: problem_type.into(),
-            title: title.into(),
-            status: status.as_u16(),
-            detail: None,
-            instance: None,
-        }
-    }
-
     /// Creates a ProblemDetails with the "about:blank" type, which indicates
     /// the problem has no additional semantics beyond that of the HTTP status code.
     pub fn blank(status: StatusCode) -> Self {
@@ -75,22 +60,6 @@ impl ProblemDetails {
         self.detail = Some(detail.into());
         self
     }
-
-    /// Sets the instance field
-    pub fn with_instance(mut self, instance: impl Into<String>) -> Self {
-        self.instance = Some(instance.into());
-        self
-    }
-
-    /// Converts the ProblemDetails into an HttpResponse with the correct
-    /// Content-Type header (application/problem+json)
-    pub fn into_response(self) -> HttpResponse {
-        let status = StatusCode::from_u16(self.status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
-
-        HttpResponse::build(status)
-            .content_type("application/problem+json")
-            .json(self)
-    }
 }
 
 /// Convenience functions for common HTTP error responses
@@ -100,39 +69,14 @@ impl ProblemDetails {
         Self::blank(StatusCode::BAD_REQUEST)
     }
 
-    /// Creates a 401 Unauthorized problem
-    pub fn unauthorized() -> Self {
-        Self::blank(StatusCode::UNAUTHORIZED)
-    }
-
-    /// Creates a 403 Forbidden problem
-    pub fn forbidden() -> Self {
-        Self::blank(StatusCode::FORBIDDEN)
-    }
-
     /// Creates a 404 Not Found problem
     pub fn not_found() -> Self {
         Self::blank(StatusCode::NOT_FOUND)
     }
 
-    /// Creates a 409 Conflict problem
-    pub fn conflict() -> Self {
-        Self::blank(StatusCode::CONFLICT)
-    }
-
-    /// Creates a 422 Unprocessable Entity problem
-    pub fn unprocessable_entity() -> Self {
-        Self::blank(StatusCode::UNPROCESSABLE_ENTITY)
-    }
-
     /// Creates a 500 Internal Server Error problem
     pub fn internal_server_error() -> Self {
         Self::blank(StatusCode::INTERNAL_SERVER_ERROR)
-    }
-
-    /// Creates a 503 Service Unavailable problem
-    pub fn service_unavailable() -> Self {
-        Self::blank(StatusCode::SERVICE_UNAVAILABLE)
     }
 }
 
@@ -155,31 +99,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_problem_details_serialization() {
-        let problem = ProblemDetails::new(
-            "https://example.com/probs/out-of-credit",
-            "You do not have enough credit.",
-            StatusCode::FORBIDDEN,
-        )
-        .with_detail("Your current balance is 30, but that costs 50.")
-        .with_instance("/account/12345/msgs/abc");
-
-        let json = serde_json::to_string(&problem).unwrap();
-
-        assert!(json.contains("\"type\":\"https://example.com/probs/out-of-credit\""));
-        assert!(json.contains("\"title\":\"You do not have enough credit.\""));
-        assert!(json.contains("\"status\":403"));
-        assert!(json.contains("\"detail\":\"Your current balance is 30, but that costs 50.\""));
-        assert!(json.contains("\"instance\":\"/account/12345/msgs/abc\""));
-    }
-
-    #[test]
     fn test_blank_problem_details() {
-        let problem = ProblemDetails::blank(StatusCode::NOT_FOUND);
+        let problem = ProblemDetails::blank(StatusCode::INTERNAL_SERVER_ERROR);
 
         assert_eq!(problem.problem_type, "about:blank");
-        assert_eq!(problem.title, "Not Found");
-        assert_eq!(problem.status, 404);
+        assert_eq!(problem.title, "Internal Server Error");
+        assert_eq!(problem.status, 500);
         assert!(problem.detail.is_none());
         assert!(problem.instance.is_none());
     }

@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use chrono::Utc;
 use domain::{
     data::repository::UserAgreementRepository,
@@ -11,6 +12,7 @@ use crate::database::postgres::{
     data::models::{prelude::UserAgreements, user_agreements},
 };
 
+#[async_trait]
 impl UserAgreementRepository for PostgresRepository {
     #[tracing::instrument(skip(self, user_id, term_id))]
     async fn has_user_agreed_to_term(&self, user_id: i32, term_id: i32) -> Result<bool> {

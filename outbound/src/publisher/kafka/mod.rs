@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use chrono::Utc;
 use domain::{
     data::service::PublisherService,
@@ -50,6 +51,7 @@ impl KafkaPublisher {
     }
 }
 
+#[async_trait]
 impl PublisherService for KafkaPublisher {
     #[tracing::instrument(skip(self, dto))]
     async fn publish_agreement(&self, dto: AcceptedTermOfUseDTO) -> Result<()> {

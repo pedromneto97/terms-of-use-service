@@ -1,18 +1,12 @@
 use crate::{
-    data::{
-        repository::{TermRepository, UserAgreementRepository},
-        service::CacheService,
-    },
+    data::{repository::DatabaseRepository, service::CacheService},
     errors::{Result, TermsOfUseError},
 };
 
 #[tracing::instrument(skip(repository, cache, user_id, group))]
-pub async fn has_user_agreed_to_term_use_case<
-    R: TermRepository + UserAgreementRepository,
-    C: CacheService,
->(
-    repository: &R,
-    cache: &C,
+pub async fn has_user_agreed_to_term_use_case(
+    repository: &dyn DatabaseRepository,
+    cache: &dyn CacheService,
     user_id: i32,
     group: &str,
 ) -> Result<bool> {

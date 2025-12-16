@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use deadpool_redis::redis::{AsyncCommands, pipe};
 use domain::{
     data::service::CacheService,
@@ -11,6 +12,7 @@ use crate::cache::deadpool_redis::DeadpoolRedisCache;
 const USER_AGREEMENTS_PREFIX: &str = "USER_AGREEMENTS:";
 const LATEST_TERMS_PREFIX: &str = "LATEST_TERMS:";
 
+#[async_trait]
 impl CacheService for DeadpoolRedisCache {
     async fn find_user_agreement(&self, user_id: i32, group: &str) -> Result<Option<bool>> {
         let mut conn = self.get_connection().await?;

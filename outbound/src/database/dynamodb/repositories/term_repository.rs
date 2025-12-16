@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use aws_sdk_dynamodb::types::AttributeValue;
 use domain::{data::repository::TermRepository, entities::TermOfUse, errors::TermsOfUseError};
 use tracing::error;
@@ -8,6 +9,7 @@ use crate::database::dynamodb::{
     model::{TERMS_TABLE, map_term_from_item},
 };
 
+#[async_trait]
 impl TermRepository for DynamoRepository {
     #[tracing::instrument(skip(self, group))]
     async fn get_latest_term_for_group(

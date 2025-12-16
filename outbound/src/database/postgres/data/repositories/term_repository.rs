@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use domain::{
     data::repository::TermRepository,
     entities::TermOfUse,
@@ -11,6 +12,7 @@ use crate::database::postgres::{
     data::models::{prelude::Terms, terms},
 };
 
+#[async_trait]
 impl TermRepository for PostgresRepository {
     #[tracing::instrument(skip(self, group))]
     async fn get_latest_term_for_group(&self, group: &str) -> Result<Option<TermOfUse>> {

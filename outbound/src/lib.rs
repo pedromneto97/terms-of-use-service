@@ -4,35 +4,35 @@ mod publisher;
 mod storage;
 
 // Database adapters
-#[cfg(all(feature = "postgres", not(feature = "dynamodb")))]
-pub use database::postgres::PostgresRepository as AppRepository;
+#[cfg(feature = "postgres")]
+pub use database::postgres::PostgresRepository;
 
-#[cfg(all(feature = "dynamodb", not(feature = "postgres")))]
-pub use database::dynamodb::DynamoRepository as AppRepository;
+#[cfg(feature = "dynamodb")]
+pub use database::dynamodb::DynamoRepository;
 
 // Cache adapters
-#[cfg(all(feature = "redis", not(feature = "valkey")))]
-pub use cache::redis::RedisCache as Cache;
+#[cfg(feature = "redis")]
+pub use cache::redis::RedisCache;
 
-#[cfg(all(feature = "valkey", not(feature = "redis")))]
-pub use cache::valkey::ValkeyCache as Cache;
+#[cfg(feature = "valkey")]
+pub use cache::valkey::ValkeyCache;
 
-#[cfg(not(any(feature = "redis", feature = "valkey")))]
-pub use cache::noop::NoopCache as Cache;
+#[cfg(not(feature = "cache"))]
+pub use cache::noop::NoopCache;
 
 // Storage adapters
-#[cfg(all(feature = "s3", not(feature = "gcloud")))]
-pub use storage::s3::S3Storage as Storage;
+#[cfg(feature = "s3")]
+pub use storage::s3::S3Storage;
 
-#[cfg(all(feature = "gcloud", not(feature = "s3")))]
-pub use storage::gcloud::GoogleCloudStorage as Storage;
+#[cfg(feature = "gcloud")]
+pub use storage::gcloud::GoogleCloudStorage;
 
 // Publisher adapters
 #[cfg(feature = "sns")]
-pub use publisher::sns::SNSPublisher as Publisher;
+pub use publisher::sns::SNSPublisher;
 
-#[cfg(all(not(feature = "sns"), feature = "kafka"))]
-pub use publisher::kafka::KafkaPublisher as Publisher;
+#[cfg(feature = "kafka")]
+pub use publisher::kafka::KafkaPublisher;
 
-#[cfg(not(any(feature = "sns", feature = "kafka")))]
-pub use publisher::noop::NoopPublisher as Publisher;
+#[cfg(not(feature = "publisher"))]
+pub use publisher::noop::NoopPublisher;

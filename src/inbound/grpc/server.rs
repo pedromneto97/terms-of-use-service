@@ -22,7 +22,6 @@ use crate::{
     },
 };
 
-#[derive(Debug)]
 pub struct GrpcService {
     config: Config,
 }
@@ -43,8 +42,8 @@ impl TermsOfUseService for GrpcService {
         let request = request.into_inner();
 
         let result = has_user_agreed_to_term_use_case(
-            &self.config.repository,
-            &self.config.cache,
+            self.config.repository.as_ref(),
+            self.config.cache.as_ref(),
             request.user_id,
             &request.group,
         )
@@ -64,9 +63,9 @@ impl TermsOfUseService for GrpcService {
         let request = request.into_inner();
 
         let terms = get_latest_term_use_case(
-            &self.config.repository,
-            &self.config.cache,
-            &self.config.storage,
+            self.config.repository.as_ref(),
+            self.config.cache.as_ref(),
+            self.config.storage.as_ref(),
             &request.group,
         )
         .await
@@ -88,9 +87,9 @@ impl TermsOfUseService for GrpcService {
         let request = request.into_inner();
 
         create_user_agreement_use_case(
-            &self.config.repository,
-            &self.config.cache,
-            &self.config.publisher,
+            self.config.repository.as_ref(),
+            self.config.cache.as_ref(),
+            self.config.publisher.as_ref(),
             request.user_id,
             request.term_id,
         )
@@ -141,9 +140,9 @@ impl TermsOfUseService for GrpcService {
         };
 
         let term = create_term_of_use_use_case(
-            &self.config.repository,
-            &self.config.storage,
-            &self.config.cache,
+            self.config.repository.as_ref(),
+            self.config.storage.as_ref(),
+            self.config.cache.as_ref(),
             CreateTermOfUseDTO {
                 group: data.group,
                 info: data.info,

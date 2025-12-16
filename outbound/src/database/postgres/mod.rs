@@ -1,3 +1,4 @@
+use domain::data::repository::DatabaseRepository;
 use migration::{Migrator, MigratorTrait};
 use sea_orm::{Database, DatabaseConnection};
 
@@ -42,3 +43,5 @@ impl PostgresRepository {
         Self { db: database }
     }
 }
+
+impl DatabaseRepository for PostgresRepository {}

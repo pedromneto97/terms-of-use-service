@@ -1,5 +1,6 @@
 use std::path::Path;
 
+use async_trait::async_trait;
 use domain::{
     data::service::StorageService,
     errors::{Result, TermsOfUseError},
@@ -61,6 +62,7 @@ impl GoogleCloudStorage {
     }
 }
 
+#[async_trait]
 impl StorageService for GoogleCloudStorage {
     async fn upload_file(&self, path: &Path, content_type: &str) -> Result<String> {
         let file_name = path

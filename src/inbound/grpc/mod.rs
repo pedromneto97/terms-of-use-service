@@ -26,6 +26,7 @@ pub async fn start_server(config: Config) -> Result<(), impl Error> {
     let addr = format!("{host}:{port}").parse().expect("Invalid host/port");
     let service = GrpcService::new(config);
 
+    #[allow(unused_mut)]
     let mut server = Server::builder();
     #[cfg(feature = "otel")]
     let mut server = server.layer(OtelGrpcLayer::default());

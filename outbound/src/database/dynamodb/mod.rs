@@ -1,6 +1,6 @@
 use aws_config::BehaviorVersion;
 use aws_sdk_dynamodb::types::{AttributeValue, ReturnValue};
-use domain::errors::TermsOfUseError;
+use domain::{data::repository::DatabaseRepository, errors::TermsOfUseError};
 use tracing::{error, info};
 
 mod migration;
@@ -77,3 +77,5 @@ impl DynamoRepository {
         })
     }
 }
+
+impl DatabaseRepository for DynamoRepository {}
