@@ -37,7 +37,7 @@ async fn get_repository() -> Arc<dyn DatabaseRepository> {
     #[cfg(feature = "postgres")]
     return Arc::new(outbound::PostgresRepository::new().await);
 
-    unreachable!()
+    unreachable!("No database feature (postgres or dynamodb) enabled")
 }
 
 async fn get_cache() -> impl CacheService {
@@ -64,7 +64,7 @@ async fn get_storage() -> Arc<dyn StorageService> {
     #[cfg(feature = "gcloud")]
     return Arc::new(outbound::GoogleCloudStorage::new().await);
 
-    unreachable!()
+    unreachable!("No storage feature (s3 or gcloud) enabled")
 }
 
 #[tokio::main]
