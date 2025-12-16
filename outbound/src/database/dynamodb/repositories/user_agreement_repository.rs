@@ -81,6 +81,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn test_has_user_agreed_to_term_returns_false_when_no_agreement() {
         let repo = create_test_repository().await;
 
@@ -91,6 +92,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn test_create_user_agreement_succeeds() {
         let repo = create_test_repository().await;
 

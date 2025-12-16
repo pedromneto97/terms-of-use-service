@@ -57,6 +57,7 @@ mod tests {
     use super::*;
 
     #[tokio::test]
+    #[test_log::test]
     async fn has_user_agreed_to_term_returns_true_when_found() {
         let agreement = user_agreements::Model {
             id: 1,
@@ -77,6 +78,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn has_user_agreed_to_term_returns_false_when_missing() {
         let db = MockDatabase::new(DatabaseBackend::Postgres)
             .append_query_results(vec![Vec::<user_agreements::Model>::new()])
@@ -90,6 +92,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn has_user_agreed_to_term_propagates_error() {
         let db = MockDatabase::new(DatabaseBackend::Postgres)
             .append_query_results(Vec::<Vec<user_agreements::Model>>::new())
@@ -103,6 +106,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn create_user_agreement_inserts_record() {
         let inserted = user_agreements::Model {
             id: 11,
@@ -127,6 +131,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn create_user_agreement_propagates_error() {
         let db = MockDatabase::new(DatabaseBackend::Postgres)
             .append_query_results(Vec::<Vec<user_agreements::Model>>::new())

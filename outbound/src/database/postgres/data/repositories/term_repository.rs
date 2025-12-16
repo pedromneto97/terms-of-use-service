@@ -72,6 +72,7 @@ mod tests {
     use super::*;
 
     #[tokio::test]
+    #[test_log::test]
     async fn get_latest_term_for_group_maps_row() {
         let created_at = Utc::now().naive_utc();
 
@@ -105,6 +106,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn get_latest_term_for_group_propagates_error() {
         let db = MockDatabase::new(DatabaseBackend::Postgres)
             .append_query_results(Vec::<Vec<terms::Model>>::new())
@@ -118,6 +120,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn get_term_by_id_returns_none_for_missing() {
         let db = MockDatabase::new(DatabaseBackend::Postgres)
             .append_query_results(vec![Vec::<terms::Model>::new()])
@@ -131,6 +134,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn create_term_returns_inserted_term() {
         let created_at = Utc::now().naive_utc();
         let input = TermOfUse {
@@ -172,6 +176,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn create_term_propagates_error() {
         let created_at = Utc::now().naive_utc();
         let input = TermOfUse {

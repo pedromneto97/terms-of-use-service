@@ -103,6 +103,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn new_builds_publisher_with_env_vars() {
         unsafe {
             std::env::set_var("KAFKA_BROKERS", "testbroker:9092");
@@ -120,6 +121,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn publish_returns_internal_error_on_send_failure() {
         let publisher = KafkaPublisher {
             producer: create_test_producer(),

@@ -155,6 +155,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn builds_url_for_file() {
         let storage = build_test_storage("test-gcs-bucket").await;
 
@@ -170,6 +171,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn builds_url_for_file_with_uuid() {
         let storage = build_test_storage("my-terms-bucket").await;
 
@@ -185,6 +187,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn builds_url_for_nested_path() {
         let storage = build_test_storage("test-gcs-bucket").await;
 
@@ -200,6 +203,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn builds_url_with_special_characters() {
         let storage = build_test_storage("test-gcs-bucket").await;
 

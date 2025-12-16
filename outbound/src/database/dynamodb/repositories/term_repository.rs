@@ -137,6 +137,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn test_should_return_none_when_no_terms_exist() {
         let repo = create_test_repository().await;
 
@@ -149,6 +150,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn test_should_return_none_when_term_id_not_found() {
         let repo = create_test_repository().await;
 
@@ -159,6 +161,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn test_create_term_successful() {
         let repo = create_test_repository().await;
 
@@ -183,6 +186,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn test_get_term_by_id_retrieves_existing_term() {
         let repo = create_test_repository().await;
 
@@ -209,6 +213,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn test_get_latest_term_for_group_returns_highest_version() {
         let repo = create_test_repository().await;
 

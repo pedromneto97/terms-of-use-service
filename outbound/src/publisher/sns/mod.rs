@@ -89,6 +89,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn publish_returns_internal_error_on_send_failure() {
         let config = Config::builder()
             .behavior_version(BehaviorVersion::latest())
@@ -111,6 +112,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn should_publish_agreement_successfully() {
         let publisher = SNSPublisher::new().await;
 

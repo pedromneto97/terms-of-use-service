@@ -211,6 +211,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn new_uses_env_configuration() {
         if !redis_server_available() {
             eprintln!("redis-server not available; skipping test new_uses_env_configuration");
@@ -227,6 +228,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn store_and_find_user_agreement() -> Result<()> {
         if !redis_server_available() {
             eprintln!("redis-server not available; skipping test store_and_find_user_agreement");
@@ -254,6 +256,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn store_and_get_latest_term_for_group() -> Result<()> {
         if !redis_server_available() {
             eprintln!(
@@ -284,6 +287,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn get_latest_term_for_group_returns_none_when_absent() -> Result<()> {
         if !redis_server_available() {
             eprintln!(
@@ -303,6 +307,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn invalidate_cache_for_group_removes_related_keys() -> Result<()> {
         if !redis_server_available() {
             eprintln!(

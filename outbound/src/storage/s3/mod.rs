@@ -143,6 +143,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn builds_url_with_custom_endpoint() {
         let storage = build_storage(Some("http://localhost:4566"));
 
@@ -155,6 +156,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn builds_url_with_default_host() {
         let storage = build_storage(None);
 
@@ -167,6 +169,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn upload_file_fails_without_real_s3() {
         let storage = build_storage(None);
 
@@ -180,6 +183,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn should_upload_file_successfully() {
         let storage = S3Storage::new().await;
 
@@ -220,6 +224,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn should_upload_pdf_file_successfully() {
         let storage = S3Storage::new().await;
 
@@ -256,6 +261,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[test_log::test]
     async fn should_delete_file_successfully() {
         let storage = S3Storage::new().await;
 
