@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use aws_config::BehaviorVersion;
-use aws_sdk_sns::{Client, config::Builder};
+use aws_sdk_sns::{Client, config::Builder, error::SdkError};
 use domain::{
     data::service::PublisherService,
     dto::AcceptedTermOfUseDTO,
@@ -59,10 +59,21 @@ impl PublisherService for SNSPublisher {
             .send()
             .await
             .map_err(|err| {
-                error!(
-                    "Failed to publish agreement for user_id {}, term_id {}, group '{}': {err}",
-                    dto.user_id, dto.term_id, dto.group
-                );
+                match err {
+                    SdkError::ServiceError(err) => {
+                        error!(
+                            "Failed to publish message to SNS topic '{}': {}",
+                            &self.topic_arn,
+                            err.into_err()
+                        );
+                    }
+                    err => {
+                        error!(
+                            "Failed to publish message to SNS topic '{}': {err}",
+                            &self.topic_arn
+                        );
+                    }
+                }
 
                 TermsOfUseError::InternalServerError
             })?;
