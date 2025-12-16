@@ -123,3 +123,370 @@ async fn get_latest_term_for_group(
 
     Ok(HttpResponse::Ok().json(TermOfUseResponse::from(term)))
 }
+
+#[cfg(test)]
+mod tests {
+    use std::path::Path;
+
+    use actix_web::{App, http::StatusCode, test};
+    use chrono::Utc;
+    use domain::{
+        data::repository::{
+            DatabaseRepository as DatabaseRepositoryTrait, TermRepository, UserAgreementRepository,
+        },
+        dto::AcceptedTermOfUseDTO,
+        entities::TermOfUse,
+        errors::Result,
+    };
+    use mockall::{mock, predicate::eq};
+    use serde_json::Value;
+    use std::sync::Arc;
+
+    use super::*;
+
+    mock! {
+        pub DatabaseRepository {}
+
+        #[async_trait::async_trait]
+        impl TermRepository for DatabaseRepository {
+            async fn get_latest_term_for_group(&self, group: &str) -> Result<Option<TermOfUse>>;
+            async fn get_term_by_id(&self, term_id: i32) -> Result<Option<TermOfUse>>;
+            async fn create_term(&self, term: TermOfUse) -> Result<TermOfUse>;
+        }
+
+        #[async_trait::async_trait]
+        impl UserAgreementRepository for DatabaseRepository {
+            async fn has_user_agreed_to_term(&self, user_id: i32, term_id: i32) -> Result<bool>;
+            async fn create_user_agreement(&self, user_id: i32, term_id: i32) -> Result<()>;
+        }
+
+        impl DatabaseRepositoryTrait for DatabaseRepository {}
+    }
+
+    mock! {
+        pub CacheService {}
+
+        #[async_trait::async_trait]
+        impl domain::data::service::CacheService for CacheService {
+            async fn find_user_agreement(&self, user_id: i32, group: &str) -> Result<Option<bool>>;
+
+            async fn store_user_agreement(&self, user_id: i32, group: &str, agreed: bool) -> Result<()>;
+
+            async fn get_latest_term_for_group(&self, group: &str) -> Result<Option<TermOfUse>>;
+
+            async fn store_latest_term_for_group(&self, term: &TermOfUse) -> Result<()>;
+
+            async fn invalidate_cache_for_group(&self, group: &str) -> Result<()>;
+        }
+    }
+
+    mock! {
+        pub StorageService {}
+
+        #[async_trait::async_trait]
+        impl domain::data::service::StorageService for StorageService {
+            async fn upload_file(&self, file: &Path, content_type: &str) -> Result<String>;
+
+            async fn delete_file(&self, path: &str) -> Result<()>;
+
+            async fn get_file_url(&self, path: &str) -> Result<String>;
+        }
+    }
+
+    mock! {
+        pub PublisherService {}
+
+        #[async_trait::async_trait]
+        impl domain::data::service::PublisherService for PublisherService {
+            async fn publish_agreement(&self, dto: AcceptedTermOfUseDTO) -> Result<()>;
+        }
+    }
+
+    fn build_config(
+        repository: MockDatabaseRepository,
+        cache: MockCacheService,
+        storage: MockStorageService,
+        publisher: MockPublisherService,
+    ) -> Config {
+        Config {
+            repository: Arc::new(repository),
+            cache: Arc::new(cache),
+            storage: Arc::new(storage),
+            publisher: Arc::new(publisher),
+        }
+    }
+
+    fn sample_term(group: &str) -> TermOfUse {
+        TermOfUse {
+            id: 1,
+            group: group.to_string(),
+            url: "stored/path.pdf".to_string(),
+            version: 1,
+            info: Some("info".to_string()),
+            created_at: Utc::now().naive_utc(),
+        }
+    }
+
+    #[actix_web::test]
+    async fn has_user_consented_reads_cache_first() {
+        let mut repository = MockDatabaseRepository::new();
+        repository.expect_get_latest_term_for_group().times(0);
+        repository.expect_has_user_agreed_to_term().times(0);
+
+        let mut cache = MockCacheService::new();
+        cache
+            .expect_find_user_agreement()
+            .with(eq(7), eq("alpha"))
+            .returning(|_, _| Ok(Some(true)));
+
+        let app = test::init_service(
+            App::new()
+                .app_data(web::Data::new(build_config(
+                    repository,
+                    cache,
+                    MockStorageService::new(),
+                    MockPublisherService::new(),
+                )))
+                .configure(configure),
+        )
+        .await;
+
+        let response = test::call_service(
+            &app,
+            test::TestRequest::get()
+                .uri("/v1/terms-of-use/has-consent/alpha/7")
+                .to_request(),
+        )
+        .await;
+
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let body = test::read_body(response).await;
+        let payload: Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(payload["hasConsented"], true);
+    }
+
+    #[actix_web::test]
+    async fn create_agreement_publishes_and_caches() {
+        let mut repository = MockDatabaseRepository::new();
+        repository
+            .expect_get_term_by_id()
+            .with(eq(3))
+            .returning(|_| Ok(Some(sample_term("legal"))));
+        repository
+            .expect_create_user_agreement()
+            .with(eq(42), eq(3))
+            .returning(|_, _| Ok(()));
+
+        let mut cache = MockCacheService::new();
+        cache
+            .expect_store_user_agreement()
+            .with(eq(42), eq("legal"), eq(true))
+            .returning(|_, _, _| Ok(()));
+
+        let mut publisher = MockPublisherService::new();
+        publisher.expect_publish_agreement().returning(|_| Ok(()));
+
+        let app = test::init_service(
+            App::new()
+                .app_data(web::Data::new(build_config(
+                    repository,
+                    cache,
+                    MockStorageService::new(),
+                    publisher,
+                )))
+                .configure(configure),
+        )
+        .await;
+
+        let response = test::call_service(
+            &app,
+            test::TestRequest::post()
+                .uri("/v1/terms-of-use/agreements")
+                .set_json(&CreateAgreementPayload {
+                    user_id: 42,
+                    term_id: 3,
+                })
+                .to_request(),
+        )
+        .await;
+
+        assert_eq!(response.status(), StatusCode::CREATED);
+    }
+
+    #[actix_web::test]
+    async fn create_term_of_use_accepts_pdf_upload() {
+        let mut repository = MockDatabaseRepository::new();
+        repository
+            .expect_get_latest_term_for_group()
+            .with(eq("legal"))
+            .returning(|_| Ok(None));
+        repository.expect_create_term().returning(|mut term| {
+            term.id = 10;
+            Ok(term)
+        });
+
+        let mut cache = MockCacheService::new();
+        cache
+            .expect_invalidate_cache_for_group()
+            .with(eq("legal"))
+            .returning(|_| Ok(()));
+
+        let mut storage = MockStorageService::new();
+        storage
+            .expect_upload_file()
+            .withf(|_, content_type| content_type == "application/pdf")
+            .returning(|_, _| Ok("stored/path.pdf".to_string()));
+        storage
+            .expect_get_file_url()
+            .with(eq("stored/path.pdf"))
+            .returning(|_| Ok("https://files/terms.pdf".to_string()));
+
+        let app = test::init_service(
+            App::new()
+                .app_data(web::Data::new(build_config(
+                    repository,
+                    cache,
+                    storage,
+                    MockPublisherService::new(),
+                )))
+                .configure(configure),
+        )
+        .await;
+
+        let boundary = "boundary123";
+        let payload = format!(
+            "--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"example/sample.pdf\"\r\nContent-Type: application/pdf\r\n\r\nPDF\r\n--{boundary}\r\nContent-Disposition: form-data; name=\"data\"\r\nContent-Type: application/json\r\n\r\n{{\"group\":\"legal\",\"info\":\"v1\"}}\r\n--{boundary}--\r\n"
+        );
+
+        let response = test::call_service(
+            &app,
+            test::TestRequest::post()
+                .uri("/v1/terms-of-use/")
+                .insert_header((
+                    "Content-Type",
+                    format!("multipart/form-data; boundary={boundary}"),
+                ))
+                .set_payload(payload)
+                .to_request(),
+        )
+        .await;
+
+        assert_eq!(response.status(), StatusCode::CREATED);
+    }
+
+    #[actix_web::test]
+    async fn create_term_of_use_rejects_non_pdf() {
+        let app = test::init_service(
+            App::new()
+                .app_data(web::Data::new(build_config(
+                    MockDatabaseRepository::new(),
+                    MockCacheService::new(),
+                    MockStorageService::new(),
+                    MockPublisherService::new(),
+                )))
+                .configure(configure),
+        )
+        .await;
+
+        let boundary = "boundary456";
+        let payload = format!(
+            "--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"terms.txt\"\r\nContent-Type: text/plain\r\n\r\nnot pdf\r\n--{boundary}\r\nContent-Disposition: form-data; name=\"data\"\r\nContent-Type: application/json\r\n\r\n{{\"group\":\"legal\"}}\r\n--{boundary}--\r\n"
+        );
+
+        let response = test::call_service(
+            &app,
+            test::TestRequest::post()
+                .uri("/v1/terms-of-use/")
+                .insert_header((
+                    "Content-Type",
+                    format!("multipart/form-data; boundary={boundary}"),
+                ))
+                .set_payload(payload)
+                .to_request(),
+        )
+        .await;
+
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+
+        let body = test::read_body(response).await;
+        let problem: Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(problem["detail"], "Term of use file must be a valid PDF");
+    }
+
+    #[actix_web::test]
+    async fn get_latest_term_returns_full_payload() {
+        let term = sample_term("finance");
+
+        let mut repository = MockDatabaseRepository::new();
+        repository.expect_get_latest_term_for_group().times(0);
+
+        let mut cache = MockCacheService::new();
+        cache
+            .expect_get_latest_term_for_group()
+            .with(eq("finance"))
+            .returning(move |_| Ok(Some(term.clone())));
+
+        let app = test::init_service(
+            App::new()
+                .app_data(web::Data::new(build_config(
+                    repository,
+                    cache,
+                    MockStorageService::new(),
+                    MockPublisherService::new(),
+                )))
+                .configure(configure),
+        )
+        .await;
+
+        let response = test::call_service(
+            &app,
+            test::TestRequest::get()
+                .uri("/v1/terms-of-use/finance")
+                .to_request(),
+        )
+        .await;
+
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let body = test::read_body(response).await;
+        let payload: Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(payload["url"], "stored/path.pdf");
+        assert_eq!(payload["group"], "finance");
+    }
+
+    #[actix_web::test]
+    async fn get_latest_term_returns_url_only() {
+        let term = sample_term("hr");
+
+        let mut cache = MockCacheService::new();
+        cache
+            .expect_get_latest_term_for_group()
+            .with(eq("hr"))
+            .returning(move |_| Ok(Some(term.clone())));
+
+        let app = test::init_service(
+            App::new()
+                .app_data(web::Data::new(build_config(
+                    MockDatabaseRepository::new(),
+                    cache,
+                    MockStorageService::new(),
+                    MockPublisherService::new(),
+                )))
+                .configure(configure),
+        )
+        .await;
+
+        let response = test::call_service(
+            &app,
+            test::TestRequest::get()
+                .uri("/v1/terms-of-use/hr?only_url=true")
+                .to_request(),
+        )
+        .await;
+
+        let body = test::read_body(response).await;
+        let payload: Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(payload["url"], "stored/path.pdf");
+    }
+}
