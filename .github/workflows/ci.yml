@@ -31,10 +31,10 @@ jobs:
         uses: ./.github/actions/rust-setup
         with:
           package: outbound
-          features: "postgres, s3, gcloud, redis kafka"
+          features: "postgres,s3,gcloud,redis,kafka"
 
       - name: Run outbound tests for feature
-        run: cargo test -p outbound --features postgres, s3, gcloud, redis, kafka
+        run: cargo test -p outbound --features postgres,s3,gcloud,redis,kafka
 
   inbound-features:
     needs: domain
@@ -42,6 +42,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Set up protoc
+        uses: arduino/setup-protoc@v3
       - name: Setup
         uses: ./.github/actions/rust-setup
         with:
@@ -133,6 +135,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: fake
           AWS_REGION: us-east-1
           AWS_ACCOUNT_ID: 000000000000
+          SNS_TOPIC_NAME: test-topic
         run: cargo test -p outbound --features sns
 
   terms-tests:
