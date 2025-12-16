@@ -1,5 +1,5 @@
 ---
-applyTo: src/inbound/**
+applyTo: inbound/**
 ---
 # Inbound Layer Instructions
 
@@ -7,8 +7,8 @@ applyTo: src/inbound/**
 Expose HTTP (Actix) and gRPC (Tonic) endpoints that delegate all business logic to the Domain layer.
 
 ## Features and layout
-- `actix-web`: REST handlers under `src/inbound/actix/` with routes grouped by version (e.g., `v1/`).
-- `grpc`: Tonic server under `src/inbound/grpc/` (includes upload helpers and mappers).
+- `actix-web`: REST handlers under `inbound/src/actix/` with routes grouped by version (e.g., `v1/`).
+- `grpc`: Tonic server under `inbound/src/grpc/` (includes upload helpers and mappers).
 
 ## Conventions
 - Validate inputs at the boundary; reject unsupported content types (PDF only for term uploads).
@@ -21,6 +21,7 @@ Expose HTTP (Actix) and gRPC (Tonic) endpoints that delegate all business logic 
 1) Add handler in the right versioned module. 2) Wire routing (`configure` for Actix or service registration for gRPC). 3) Call the appropriate use case, passing trait-based services from `Config`. 4) Map result to the API response shape.
 
 ## Key files
-- `src/inbound/mod.rs` — Feature-gated module inclusion and server startup.
-- `src/inbound/actix/` — REST handlers, payloads, and error mapping.
-- `src/inbound/grpc/` — Tonic server, mappers, and file upload helpers.
+- `inbound/src/lib.rs` — Feature-gated module inclusion and server startup.
+- `inbound/src/actix/` — REST handlers, payloads, and error mapping.
+- `inbound/src/grpc/` — Tonic server, mappers, and file upload helpers.
+- `inbound/src/config.rs` — Configuration struct with trait-based service dependencies.
