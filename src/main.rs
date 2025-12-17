@@ -81,5 +81,6 @@ async fn main() -> Result<(), impl Error> {
     #[cfg(feature = "grpc")]
     return inbound::start_grpc_server(config).await;
 
+    #[cfg(not(any(feature = "actix-web", feature = "grpc")))]
     compile_error!("Either feature 'actix-web' or 'grpc' must be enabled.");
 }
