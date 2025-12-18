@@ -3,6 +3,7 @@ use opentelemetry::trace::TracerProvider;
 use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::logs::{BatchLogProcessor, SdkLoggerProvider};
+use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::{Resource, metrics::SdkMeterProvider, trace::SdkTracerProvider};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -74,6 +75,9 @@ fn setup_tracer(
         .with(telemetry_layer)
         .with(otel_logs_layer)
         .init();
+
+    global::set_tracer_provider(tracer_provider.clone());
+    global::set_text_map_propagator(TraceContextPropagator::new());
 
     tracer_provider
 }
