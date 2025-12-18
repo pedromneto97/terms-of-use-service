@@ -14,6 +14,7 @@ const LATEST_TERMS_PREFIX: &str = "LATEST_TERMS:";
 
 #[async_trait]
 impl CacheService for DeadpoolRedisCache {
+    #[tracing::instrument(skip(self))]
     async fn find_user_agreement(&self, user_id: i32, group: &str) -> Result<Option<bool>> {
         let mut conn = self.get_connection().await?;
 
@@ -26,6 +27,7 @@ impl CacheService for DeadpoolRedisCache {
         })
     }
 
+    #[tracing::instrument(skip(self))]
     async fn store_user_agreement(&self, user_id: i32, group: &str, agreed: bool) -> Result<()> {
         let mut conn = self.get_connection().await?;
 
@@ -40,6 +42,7 @@ impl CacheService for DeadpoolRedisCache {
             })
     }
 
+    #[tracing::instrument(skip(self))]
     async fn get_latest_term_for_group(&self, group: &str) -> Result<Option<TermOfUse>> {
         let mut conn = self.get_connection().await?;
 
@@ -68,6 +71,7 @@ impl CacheService for DeadpoolRedisCache {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     async fn store_latest_term_for_group(&self, term: &TermOfUse) -> Result<()> {
         let mut conn = self.get_connection().await?;
 
@@ -87,6 +91,7 @@ impl CacheService for DeadpoolRedisCache {
             })
     }
 
+    #[tracing::instrument(skip(self))]
     async fn invalidate_cache_for_group(&self, group: &str) -> Result<()> {
         let mut conn = self.get_connection().await?;
 
