@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: "terms-overview"
+    orgId: 1
+    folder: "Terms of Use"
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards

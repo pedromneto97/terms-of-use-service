@@ -1,0 +1,84 @@
+{
+  "uid": "terms-overview",
+  "title": "Terms of Use — Preview",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Collector Health",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 8,
+        "h": 6
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "targets": [
+        {
+          "expr": "sum(up)",
+          "legendFormat": "instances up"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "values": false
+        },
+        "orientation": "horizontal"
+      }
+    },
+    {
+      "type": "graph",
+      "title": "Accepted Spans (rate)",
+      "gridPos": {
+        "x": 8,
+        "y": 0,
+        "w": 16,
+        "h": 6
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(otelcol_receiver_accepted_spans[1m]))",
+          "legendFormat": "accepted spans"
+        }
+      ],
+      "lines": true,
+      "linewidth": 2
+    },
+    {
+      "type": "logs",
+      "title": "Service Logs",
+      "gridPos": {
+        "x": 0,
+        "y": 6,
+        "w": 24,
+        "h": 10
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "expr": "{}"
+        }
+      ],
+      "options": {
+        "showLabels": true,
+        "enableLogDetails": true
+      }
+    }
+  ]
+}
