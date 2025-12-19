@@ -6,6 +6,7 @@ use domain::{
     errors::{Result, TermsOfUseError},
 };
 use rdkafka::producer::Producer;
+use tokio::task;
 use tracing::error;
 
 use super::KafkaPublisher;
@@ -13,10 +14,13 @@ use super::KafkaPublisher;
 #[async_trait]
 impl HealthCheck for KafkaPublisher {
     async fn ping(&self) -> Result<()> {
-        match self
-            .producer
-            .client()
-            .fetch_metadata(None, Duration::from_secs(3))
+        let producer = self.producer.clone();
+        match task::spawn_blocking(move || {
+            producer
+                .client()
+                .fetch_metadata(None, Duration::from_secs(3))
+        })
+        .await
         {
             Ok(_) => Ok(()),
             Err(err) => {
