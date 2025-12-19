@@ -14,17 +14,17 @@ pub struct HealthResponse {
 #[get("/health")]
 #[tracing::instrument(skip(config))]
 async fn health(config: Data<Config>) -> HttpResponse {
-    let ping = config.ping().await;
+    let services_status = config.ping().await;
 
-    if ping.iter().any(|(_, is_healthy)| !*is_healthy) {
+    if services_status.iter().any(|(_, is_healthy)| !*is_healthy) {
         HttpResponse::ServiceUnavailable().json(HealthResponse {
             status: "UNAVAILABLE".to_string(),
-            services: ping,
+            services: services_status,
         })
     } else {
         HttpResponse::Ok().json(HealthResponse {
             status: "OK".to_string(),
-            services: ping,
+            services: services_status,
         })
     }
 }
@@ -36,6 +36,7 @@ pub fn configure(cfg: &mut actix_web::web::ServiceConfig) {
 #[cfg(test)]
 mod tests {
     use actix_web::{App, http::StatusCode, test, web::Data};
+    use domain::errors::TermsOfUseError;
     use serde_json::Value;
     use std::sync::Arc;
 
@@ -97,7 +98,7 @@ mod tests {
         let mut repository = MockDatabaseRepository::new();
         repository
             .expect_ping()
-            .returning(|| Err(domain::errors::TermsOfUseError::InternalServerError));
+            .returning(|| Err(TermsOfUseError::InternalServerError));
 
         let mut cache = MockCacheService::new();
         cache.expect_ping().returning(|| Ok(()));
@@ -136,7 +137,7 @@ mod tests {
         let mut cache = MockCacheService::new();
         cache
             .expect_ping()
-            .returning(|| Err(domain::errors::TermsOfUseError::InternalServerError));
+            .returning(|| Err(TermsOfUseError::InternalServerError));
 
         let mut storage = MockStorageService::new();
         storage.expect_ping().returning(|| Ok(()));
@@ -162,5 +163,77 @@ mod tests {
         let payload: Value = serde_json::from_slice(&body).unwrap();
         assert_eq!(payload["status"], "UNAVAILABLE");
         assert_eq!(payload["services"]["cache"], false);
+    }
+
+    #[actix_web::test]
+    async fn health_returns_service_unavailable_when_storage_unhealthy() {
+        let mut repository = MockDatabaseRepository::new();
+        repository.expect_ping().returning(|| Ok(()));
+
+        let mut cache = MockCacheService::new();
+        cache.expect_ping().returning(|| Ok(()));
+
+        let mut storage = MockStorageService::new();
+        storage
+            .expect_ping()
+            .returning(|| Err(TermsOfUseError::InternalServerError));
+
+        let mut publisher = MockPublisherService::new();
+        publisher.expect_ping().returning(|| Ok(()));
+
+        let app = test::init_service(
+            App::new()
+                .app_data(Data::new(build_config(
+                    repository, cache, storage, publisher,
+                )))
+                .configure(configure),
+        )
+        .await;
+
+        let response =
+            test::call_service(&app, test::TestRequest::get().uri("/health").to_request()).await;
+
+        assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+
+        let body = test::read_body(response).await;
+        let payload: Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(payload["status"], "UNAVAILABLE");
+        assert_eq!(payload["services"]["storage"], false);
+    }
+
+    #[actix_web::test]
+    async fn health_returns_service_unavailable_when_publisher_unhealthy() {
+        let mut repository = MockDatabaseRepository::new();
+        repository.expect_ping().returning(|| Ok(()));
+
+        let mut cache = MockCacheService::new();
+        cache.expect_ping().returning(|| Ok(()));
+
+        let mut storage = MockStorageService::new();
+        storage.expect_ping().returning(|| Ok(()));
+
+        let mut publisher = MockPublisherService::new();
+        publisher
+            .expect_ping()
+            .returning(|| Err(TermsOfUseError::InternalServerError));
+
+        let app = test::init_service(
+            App::new()
+                .app_data(Data::new(build_config(
+                    repository, cache, storage, publisher,
+                )))
+                .configure(configure),
+        )
+        .await;
+
+        let response =
+            test::call_service(&app, test::TestRequest::get().uri("/health").to_request()).await;
+
+        assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+
+        let body = test::read_body(response).await;
+        let payload: Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(payload["status"], "UNAVAILABLE");
+        assert_eq!(payload["services"]["publisher"], false);
     }
 }
