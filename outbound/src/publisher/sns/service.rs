@@ -77,7 +77,7 @@ mod tests {
         let client = Client::from_conf(config);
 
         let publisher = SNSPublisher {
-            client: client,
+            client,
             topic_arn: "arn:aws:sns:us-east-1:123456789012:terms-agreements".to_string(),
         };
 

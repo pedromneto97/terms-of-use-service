@@ -16,7 +16,7 @@ pub struct HealthResponse {
 async fn health(config: Data<Config>) -> HttpResponse {
     let ping = config.ping().await;
 
-    if ping.iter().any(|(_, v)| !*v) {
+    if ping.iter().any(|(_, is_healthy)| !*is_healthy) {
         HttpResponse::ServiceUnavailable().json(HealthResponse {
             status: "UNAVAILABLE".to_string(),
             services: ping,

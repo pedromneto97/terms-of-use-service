@@ -95,7 +95,7 @@ mod tests {
 
         S3Storage {
             bucket_name: "test-bucket".to_string(),
-            client: client,
+            client,
             endpoint_url: endpoint_url.map(String::from),
         }
     }
