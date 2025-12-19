@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use aws_config::BehaviorVersion;
 use aws_sdk_sns::{Client, config::Builder, error::SdkError};
 use domain::{
-    data::service::PublisherService,
+    data::{PublisherServiceWithHealthCheck, health_check::HealthCheck, service::PublisherService},
     dto::AcceptedTermOfUseDTO,
     errors::{Result, TermsOfUseError},
 };
@@ -81,6 +81,21 @@ impl PublisherService for SNSPublisher {
         Ok(())
     }
 }
+
+#[async_trait]
+impl HealthCheck for SNSPublisher {
+    async fn ping(&self) -> Result<()> {
+        self.client.list_topics().send().await.map_err(|err| {
+            error!("Failed to ping SNS service: {err}");
+
+            TermsOfUseError::InternalServerError
+        })?;
+
+        Ok(())
+    }
+}
+
+impl PublisherServiceWithHealthCheck for SNSPublisher {}
 
 #[cfg(test)]
 mod tests {

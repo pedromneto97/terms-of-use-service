@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use aws_config::BehaviorVersion;
 use aws_sdk_s3::{config::Builder as S3ConfigBuilder, primitives::ByteStream};
 use domain::{
-    data::service::StorageService,
+    data::{StorageServiceWithHealthCheck, health_check::HealthCheck, service::StorageService},
     errors::{Result, TermsOfUseError},
 };
 use tracing::{error, info};
@@ -118,6 +118,25 @@ impl StorageService for S3Storage {
         ))
     }
 }
+
+#[async_trait]
+impl HealthCheck for S3Storage {
+    async fn ping(&self) -> Result<()> {
+        self.client
+            .list_buckets()
+            .max_buckets(1)
+            .send()
+            .await
+            .map_err(|err| {
+                error!("Failed to ping S3 storage: {err}");
+
+                TermsOfUseError::InternalServerError
+            })
+            .map(|_| ())
+    }
+}
+
+impl StorageServiceWithHealthCheck for S3Storage {}
 
 #[cfg(test)]
 mod tests {

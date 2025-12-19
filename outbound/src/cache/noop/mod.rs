@@ -31,4 +31,8 @@ impl CacheService for NoopCache {
     async fn invalidate_cache_for_group(&self, _group: &str) -> Result<()> {
         Ok(())
     }
+
+    async fn ping(&self) -> Result<()> {
+        Ok(())
+    }
 }

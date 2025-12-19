@@ -1,5 +1,9 @@
 use async_trait::async_trait;
-use domain::{data::service::PublisherService, dto::AcceptedTermOfUseDTO, errors::Result};
+use domain::{
+    data::{PublisherServiceWithHealthCheck, health_check::HealthCheck, service::PublisherService},
+    dto::AcceptedTermOfUseDTO,
+    errors::Result,
+};
 
 #[derive(Clone, Debug)]
 pub struct NoopPublisher;
@@ -16,3 +20,12 @@ impl PublisherService for NoopPublisher {
         Ok(())
     }
 }
+
+#[async_trait]
+impl HealthCheck for NoopPublisher {
+    async fn ping(&self) -> Result<()> {
+        Ok(())
+    }
+}
+
+impl PublisherServiceWithHealthCheck for NoopPublisher {}

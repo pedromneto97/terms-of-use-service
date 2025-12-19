@@ -2,7 +2,7 @@ use std::path::Path;
 
 use async_trait::async_trait;
 use domain::{
-    data::service::StorageService,
+    data::{StorageServiceWithHealthCheck, health_check::HealthCheck, service::StorageService},
     errors::{Result, TermsOfUseError},
 };
 use google_cloud_storage::client::{Storage, StorageControl};
@@ -131,6 +131,28 @@ impl StorageService for GoogleCloudStorage {
         ))
     }
 }
+
+#[async_trait]
+impl HealthCheck for GoogleCloudStorage {
+    async fn ping(&self) -> Result<()> {
+        self.control_client
+            .list_buckets()
+            .set_page_size(1)
+            .send()
+            .await
+            .map_err(|err| {
+                error!(
+                    "Failed to ping Google Cloud Storage bucket '{}': {err}",
+                    &self.bucket_name
+                );
+
+                TermsOfUseError::InternalServerError
+            })
+            .map(|_| ())
+    }
+}
+
+impl StorageServiceWithHealthCheck for GoogleCloudStorage {}
 
 #[cfg(test)]
 mod tests {

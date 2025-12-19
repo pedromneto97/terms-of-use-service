@@ -1,4 +1,11 @@
-use domain::data::repository::DatabaseRepository;
+use async_trait::async_trait;
+use domain::{
+    data::{
+        DatabaseRepositoryWithHealthCheck, health_check::HealthCheck,
+        repository::DatabaseRepository,
+    },
+    errors::{Result, TermsOfUseError},
+};
 use migration::{Migrator, MigratorTrait};
 use sea_orm::{Database, DatabaseConnection};
 
@@ -50,3 +57,16 @@ impl PostgresRepository {
 }
 
 impl DatabaseRepository for PostgresRepository {}
+
+#[async_trait]
+impl HealthCheck for PostgresRepository {
+    async fn ping(&self) -> Result<()> {
+        self.db.ping().await.map_err(|err| {
+            tracing::error!("Failed to ping Postgres database: {err}");
+
+            TermsOfUseError::InternalServerError
+        })
+    }
+}
+
+impl DatabaseRepositoryWithHealthCheck for PostgresRepository {}

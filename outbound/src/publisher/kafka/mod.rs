@@ -1,13 +1,13 @@
 use async_trait::async_trait;
 use chrono::Utc;
 use domain::{
-    data::service::PublisherService,
+    data::{PublisherServiceWithHealthCheck, health_check::HealthCheck, service::PublisherService},
     dto::AcceptedTermOfUseDTO,
     errors::{Result, TermsOfUseError},
 };
 use rdkafka::{
     config::ClientConfig,
-    producer::{FutureProducer, FutureRecord},
+    producer::{FutureProducer, FutureRecord, Producer},
 };
 use std::time::Duration;
 use tracing::{error, info};
@@ -87,6 +87,26 @@ impl PublisherService for KafkaPublisher {
         Ok(())
     }
 }
+
+#[async_trait]
+impl HealthCheck for KafkaPublisher {
+    async fn ping(&self) -> Result<()> {
+        match self
+            .producer
+            .client()
+            .fetch_metadata(None, Duration::from_secs(3))
+        {
+            Ok(_) => Ok(()),
+            Err(err) => {
+                error!("Failed to ping Kafka service: {err}");
+
+                Err(TermsOfUseError::InternalServerError)
+            }
+        }
+    }
+}
+
+impl PublisherServiceWithHealthCheck for KafkaPublisher {}
 
 #[cfg(test)]
 mod tests {

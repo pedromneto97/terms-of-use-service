@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use deadpool_redis::redis::{AsyncCommands, pipe};
 use domain::{
-    data::service::CacheService,
+    data::{CacheServiceWithHealthCheck, health_check::HealthCheck, service::CacheService},
     entities::TermOfUse,
     errors::{Result, TermsOfUseError},
 };
@@ -122,6 +122,21 @@ impl CacheService for DeadpoolRedisCache {
         })
     }
 }
+
+#[async_trait]
+impl HealthCheck for DeadpoolRedisCache {
+    async fn ping(&self) -> Result<()> {
+        let mut conn = self.get_connection().await?;
+
+        conn.ping().await.map_err(|err| {
+            error!("Failed to ping Redis cache: {err}");
+
+            TermsOfUseError::InternalServerError
+        })
+    }
+}
+
+impl CacheServiceWithHealthCheck for DeadpoolRedisCache {}
 
 #[cfg(test)]
 mod tests {

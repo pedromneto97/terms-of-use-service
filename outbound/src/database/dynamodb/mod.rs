@@ -1,6 +1,13 @@
+use async_trait::async_trait;
 use aws_config::BehaviorVersion;
 use aws_sdk_dynamodb::types::{AttributeValue, ReturnValue};
-use domain::{data::repository::DatabaseRepository, errors::TermsOfUseError};
+use domain::{
+    data::{
+        DatabaseRepositoryWithHealthCheck, health_check::HealthCheck,
+        repository::DatabaseRepository,
+    },
+    errors::{Result, TermsOfUseError},
+};
 use tracing::{error, info};
 
 mod migration;
@@ -38,7 +45,7 @@ impl DynamoRepository {
     }
 
     /// Atomically increments and returns the next ID for a given counter
-    async fn get_next_id(&self, counter_name: &str) -> Result<i32, TermsOfUseError> {
+    async fn get_next_id(&self, counter_name: &str) -> Result<i32> {
         let result = self
             .client
             .update_item()
@@ -79,3 +86,23 @@ impl DynamoRepository {
 }
 
 impl DatabaseRepository for DynamoRepository {}
+
+#[async_trait]
+impl HealthCheck for DynamoRepository {
+    async fn ping(&self) -> Result<()> {
+        self.client
+            .list_tables()
+            .limit(1)
+            .send()
+            .await
+            .map_err(|err| {
+                error!("Failed to ping DynamoDB database: {err}");
+
+                TermsOfUseError::InternalServerError
+            })
+            .map(|_| ())
+    }
+}
+
+#[async_trait]
+impl DatabaseRepositoryWithHealthCheck for DynamoRepository {}
