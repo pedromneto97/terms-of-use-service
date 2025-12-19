@@ -31,25 +31,11 @@ mod tests {
     #[tokio::test]
     #[test_log::test]
     async fn health_check_ping_should_succeed_with_valid_sns_client() {
-        let config = Config::builder()
-            .behavior_version(BehaviorVersion::latest())
-            .credentials_provider(SharedCredentialsProvider::new(Credentials::for_tests()))
-            .region(Region::new("us-east-1"))
-            .build();
+        let config = SNSPublisher::new().await;
 
-        let client = Client::from_conf(config);
+        let result = config.ping().await;
 
-        let publisher = SNSPublisher {
-            client,
-            topic_arn: "arn:aws:sns:us-east-1:123456789012:terms-agreements".to_string(),
-        };
-
-        // Note: This will fail without actual SNS access, which returns InternalServerError
-        let result = publisher.ping().await;
-
-        let err = result.err().unwrap();
-
-        assert!(matches!(err, TermsOfUseError::InternalServerError,));
+        assert!(result.is_ok(), "ping should succeed with valid SNS client");
     }
 
     #[tokio::test]
