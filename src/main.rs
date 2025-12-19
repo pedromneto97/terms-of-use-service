@@ -1,8 +1,8 @@
 use std::{error::Error, sync::Arc};
 
 use domain::data::{
-    repository::DatabaseRepository,
-    service::{CacheService, PublisherService, StorageService},
+    CacheServiceWithHealthCheck, DatabaseRepositoryWithHealthCheck,
+    PublisherServiceWithHealthCheck, StorageServiceWithHealthCheck,
 };
 use dotenvy::dotenv;
 use inbound::Config;
@@ -22,7 +22,7 @@ compile_error!("Multiple storage features enabled. Please enable only one: 's3' 
 #[cfg(all(feature = "redis", feature = "valkey", not(any(test, clippy, rustfmt))))]
 compile_error!("Features 'redis' and 'valkey' cannot be enabled at the same time.");
 
-async fn get_repository() -> Arc<dyn DatabaseRepository> {
+async fn get_repository() -> Arc<dyn DatabaseRepositoryWithHealthCheck> {
     #[cfg(feature = "dynamodb")]
     return Arc::new(outbound::DynamoRepository::new().await);
 
@@ -33,7 +33,7 @@ async fn get_repository() -> Arc<dyn DatabaseRepository> {
     compile_error!("Either feature 'dynamodb' or 'postgres' must be enabled.");
 }
 
-async fn get_cache() -> impl CacheService {
+async fn get_cache() -> impl CacheServiceWithHealthCheck {
     #[cfg(feature = "redis")]
     return outbound::RedisCache::new().await;
     #[cfg(feature = "valkey")]
@@ -42,7 +42,7 @@ async fn get_cache() -> impl CacheService {
     return outbound::NoopCache::new().await;
 }
 
-async fn get_publisher() -> impl PublisherService {
+async fn get_publisher() -> impl PublisherServiceWithHealthCheck {
     #[cfg(feature = "sns")]
     return outbound::SNSPublisher::new().await;
     #[cfg(feature = "kafka")]
@@ -51,7 +51,7 @@ async fn get_publisher() -> impl PublisherService {
     return outbound::NoopPublisher::new().await;
 }
 
-async fn get_storage() -> Arc<dyn StorageService> {
+async fn get_storage() -> Arc<dyn StorageServiceWithHealthCheck> {
     #[cfg(feature = "s3")]
     return Arc::new(outbound::S3Storage::new().await);
     #[cfg(feature = "gcloud")]
