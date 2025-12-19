@@ -31,23 +31,21 @@ impl HealthCheck for KafkaPublisher {
 #[cfg(test)]
 mod tests {
     use domain::{data::health_check::HealthCheck, errors::TermsOfUseError};
-    use rdkafka::{ClientConfig, producer::FutureProducer};
+    use rdkafka::ClientConfig;
 
     use super::KafkaPublisher;
-
-    fn create_test_producer() -> FutureProducer {
-        ClientConfig::new()
-            .set("bootstrap.servers", "invalid:9092")
-            .set("message.timeout.ms", "100")
-            .create()
-            .expect("Failed to create test producer")
-    }
 
     #[tokio::test]
     #[test_log::test]
     async fn health_check_ping_should_fail_with_invalid_broker() {
+        let producer = ClientConfig::new()
+            .set("bootstrap.servers", "invalid:9092")
+            .set("message.timeout.ms", "100")
+            .create()
+            .expect("Failed to create test producer");
+
         let publisher = KafkaPublisher {
-            producer: create_test_producer(),
+            producer,
             topic: "test-topic".to_string(),
         };
 
@@ -65,28 +63,14 @@ mod tests {
 
     #[tokio::test]
     #[test_log::test]
-    async fn health_check_ping_returns_internal_error_on_metadata_fetch_failure() {
-        // Create a producer with an invalid bootstrap server
-        let producer = ClientConfig::new()
-            .set("bootstrap.servers", "invalid-broker:9092")
-            .set("message.timeout.ms", "100")
-            .create::<FutureProducer>()
-            .expect("Failed to create producer");
-
-        let publisher = KafkaPublisher {
-            producer,
-            topic: "test-topic".to_string(),
-        };
+    async fn health_check_ping_returns_ok() {
+        let publisher = KafkaPublisher::new().await;
 
         let result = publisher.ping().await;
 
         assert!(
-            result.is_err(),
-            "ping should return error for invalid broker"
+            result.is_ok(),
+            "ping should succeed with valid Kafka broker"
         );
-        assert!(matches!(
-            result.err().unwrap(),
-            TermsOfUseError::InternalServerError
-        ));
     }
 }
