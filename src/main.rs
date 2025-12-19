@@ -7,7 +7,7 @@ use domain::data::{
 use dotenvy::dotenv;
 use inbound::Config;
 
-mod core;
+mod telemetry;
 
 #[cfg(all(
     feature = "dynamodb",
@@ -66,7 +66,7 @@ async fn main() -> Result<(), impl Error> {
     dotenv().ok();
 
     #[cfg(feature = "otel")]
-    let _provider = core::telemetry::init_telemetry();
+    let _provider = telemetry::init_telemetry();
 
     let repository = get_repository().await;
     let cache = get_cache().await;
