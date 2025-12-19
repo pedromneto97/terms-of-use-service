@@ -29,3 +29,38 @@ impl HealthCheck for NoopPublisher {
 }
 
 impl PublisherServiceWithHealthCheck for NoopPublisher {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn health_check_ping_should_always_succeed() {
+        let publisher = NoopPublisher::new().await;
+
+        let result = publisher.ping().await;
+
+        assert!(
+            result.is_ok(),
+            "NoopPublisher.ping() should always return Ok(())"
+        );
+    }
+
+    #[tokio::test]
+    async fn publish_agreement_should_always_succeed() {
+        let publisher = NoopPublisher::new().await;
+
+        let dto = AcceptedTermOfUseDTO {
+            term_id: 1,
+            user_id: 2,
+            group: "privacy-policy".to_string(),
+        };
+
+        let result = publisher.publish_agreement(dto).await;
+
+        assert!(
+            result.is_ok(),
+            "NoopPublisher.publish_agreement() should always return Ok(())"
+        );
+    }
+}

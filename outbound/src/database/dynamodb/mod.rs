@@ -1,15 +1,12 @@
-use async_trait::async_trait;
 use aws_config::BehaviorVersion;
 use aws_sdk_dynamodb::types::{AttributeValue, ReturnValue};
 use domain::{
-    data::{
-        DatabaseRepositoryWithHealthCheck, health_check::HealthCheck,
-        repository::DatabaseRepository,
-    },
+    data::{DatabaseRepositoryWithHealthCheck, repository::DatabaseRepository},
     errors::{Result, TermsOfUseError},
 };
 use tracing::{error, info};
 
+mod health_check;
 mod migration;
 mod model;
 mod repositories;
@@ -87,22 +84,4 @@ impl DynamoRepository {
 
 impl DatabaseRepository for DynamoRepository {}
 
-#[async_trait]
-impl HealthCheck for DynamoRepository {
-    async fn ping(&self) -> Result<()> {
-        self.client
-            .list_tables()
-            .limit(1)
-            .send()
-            .await
-            .map_err(|err| {
-                error!("Failed to ping DynamoDB database: {err}");
-
-                TermsOfUseError::InternalServerError
-            })
-            .map(|_| ())
-    }
-}
-
-#[async_trait]
 impl DatabaseRepositoryWithHealthCheck for DynamoRepository {}
