@@ -4,6 +4,7 @@ use domain::data::{
     CacheServiceWithHealthCheck, DatabaseRepositoryWithHealthCheck,
     PublisherServiceWithHealthCheck, StorageServiceWithHealthCheck,
 };
+use tokio::join;
 
 #[derive(Clone)]
 pub struct Config {
@@ -31,13 +32,12 @@ impl Config {
     pub async fn ping(&self) -> HashMap<&'static str, bool> {
         let mut results = HashMap::new();
 
-        let (repository, cache, storage, publisher) = futures::future::join4(
+        let (repository, cache, storage, publisher) = join!(
             self.repository.ping(),
             self.cache.ping(),
             self.storage.ping(),
             self.publisher.ping(),
-        )
-        .await;
+        );
 
         results.insert("repository", repository.is_ok());
         results.insert("cache", cache.is_ok());
