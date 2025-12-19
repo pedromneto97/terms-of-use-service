@@ -8,6 +8,7 @@ use opentelemetry_instrumentation_actix_web::{RequestMetrics, RequestTracing};
 use crate::config::Config;
 
 mod error;
+mod healthcheck;
 mod v1;
 
 pub async fn start_actix_server(config: Config) -> std::io::Result<()> {
@@ -24,6 +25,7 @@ pub async fn start_actix_server(config: Config) -> std::io::Result<()> {
             .wrap(RequestTracing::new())
             .wrap(RequestMetrics::default())
             .app_data(Data::new(config.clone()))
+            .configure(healthcheck::configure)
             .configure(v1::controller::configure)
     })
     .bind((host.as_str(), port))?

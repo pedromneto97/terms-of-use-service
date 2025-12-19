@@ -17,7 +17,7 @@ opentelemetry-instrumentation-actix-web = { version = "0.23.0", features = [
 ], optional = true }
 prost = { version = "0.14", optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
-tokio = { version = "1", features = ["fs"], optional = true }
+tokio = { version = "1", optional = true }
 tonic = { version = "0.14", features = ["zstd"], optional = true }
 tonic-prost = { version = "0.14", optional = true }
 tonic-tracing-opentelemetry = { version = "0.32.0", optional = true }
@@ -41,7 +41,7 @@ grpc = [
     "tonic-prost-build",
     "tonic-tracing-opentelemetry",
     "uuid",
-    "tokio",
+    "tokio/fs",
     "init-tracing-opentelemetry",
 ]
 actix-web = [
@@ -49,4 +49,5 @@ actix-web = [
     "dep:actix-multipart",
     "dep:opentelemetry-instrumentation-actix-web",
     "dep:serde",
+    "tokio/macros",
 ]

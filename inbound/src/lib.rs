@@ -6,6 +6,9 @@ mod actix;
 #[cfg(feature = "grpc")]
 mod grpc;
 
+#[cfg(test)]
+mod mocks;
+
 pub use config::Config;
 
 #[cfg(feature = "actix-web")]
