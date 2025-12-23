@@ -18,11 +18,26 @@ impl HealthCheck for KafkaPublisher {
         match task::spawn_blocking(move || {
             producer
                 .client()
-                .fetch_metadata(None, Duration::from_secs(3))
+                .fetch_metadata(None, Duration::from_millis(500))
         })
         .await
         {
-            Ok(_) => Ok(()),
+            Ok(metadata) => match metadata {
+                Ok(metadata) => {
+                    if metadata.brokers().is_empty() {
+                        error!("No brokers found in Kafka metadata");
+
+                        Err(TermsOfUseError::InternalServerError)
+                    } else {
+                        Ok(())
+                    }
+                }
+                Err(err) => {
+                    error!("Failed to fetch Kafka metadata: {err}");
+
+                    Err(TermsOfUseError::InternalServerError)
+                }
+            },
             Err(err) => {
                 error!("Failed to ping Kafka service: {err}");
 
