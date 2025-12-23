@@ -10,6 +10,7 @@ members = ["domain", "inbound", "migration", "outbound"]
 domain = { path = "domain" }
 dotenvy = "0.15.7"
 inbound = { path = "inbound" }
+jemallocator = "0.5"
 opentelemetry = { version = "0.31", optional = true }
 opentelemetry-appender-tracing = { version = "0.31", optional = true }
 opentelemetry_sdk = { version = "0.31", features = [

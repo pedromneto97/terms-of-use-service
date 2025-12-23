@@ -7,6 +7,9 @@ use domain::data::{
 use dotenvy::dotenv;
 use inbound::Config;
 
+#[global_allocator]
+static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
+
 mod telemetry;
 
 #[cfg(all(
