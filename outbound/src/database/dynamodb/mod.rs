@@ -1,8 +1,12 @@
 use aws_config::BehaviorVersion;
 use aws_sdk_dynamodb::types::{AttributeValue, ReturnValue};
-use domain::{data::repository::DatabaseRepository, errors::TermsOfUseError};
+use domain::{
+    data::{DatabaseRepositoryWithHealthCheck, repository::DatabaseRepository},
+    errors::{Result, TermsOfUseError},
+};
 use tracing::{error, info};
 
+mod health_check;
 mod migration;
 mod model;
 mod repositories;
@@ -38,7 +42,7 @@ impl DynamoRepository {
     }
 
     /// Atomically increments and returns the next ID for a given counter
-    async fn get_next_id(&self, counter_name: &str) -> Result<i32, TermsOfUseError> {
+    async fn get_next_id(&self, counter_name: &str) -> Result<i32> {
         let result = self
             .client
             .update_item()
@@ -79,3 +83,5 @@ impl DynamoRepository {
 }
 
 impl DatabaseRepository for DynamoRepository {}
+
+impl DatabaseRepositoryWithHealthCheck for DynamoRepository {}

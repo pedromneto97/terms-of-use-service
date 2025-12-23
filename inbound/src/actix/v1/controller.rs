@@ -126,81 +126,18 @@ async fn get_latest_term_for_group(
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
-
-    use actix_web::{App, http::StatusCode, test};
+    use actix_web::{App, http::StatusCode, test, web};
     use chrono::Utc;
-    use domain::{
-        data::repository::{
-            DatabaseRepository as DatabaseRepositoryTrait, TermRepository, UserAgreementRepository,
-        },
-        dto::AcceptedTermOfUseDTO,
-        entities::TermOfUse,
-        errors::Result,
-    };
-    use mockall::{mock, predicate::eq};
+    use domain::entities::TermOfUse;
+    use mockall::predicate::eq;
     use serde_json::Value;
     use std::sync::Arc;
 
-    use super::*;
-
-    mock! {
-        pub DatabaseRepository {}
-
-        #[async_trait::async_trait]
-        impl TermRepository for DatabaseRepository {
-            async fn get_latest_term_for_group(&self, group: &str) -> Result<Option<TermOfUse>>;
-            async fn get_term_by_id(&self, term_id: i32) -> Result<Option<TermOfUse>>;
-            async fn create_term(&self, term: TermOfUse) -> Result<TermOfUse>;
-        }
-
-        #[async_trait::async_trait]
-        impl UserAgreementRepository for DatabaseRepository {
-            async fn has_user_agreed_to_term(&self, user_id: i32, term_id: i32) -> Result<bool>;
-            async fn create_user_agreement(&self, user_id: i32, term_id: i32) -> Result<()>;
-        }
-
-        impl DatabaseRepositoryTrait for DatabaseRepository {}
-    }
-
-    mock! {
-        pub CacheService {}
-
-        #[async_trait::async_trait]
-        impl domain::data::service::CacheService for CacheService {
-            async fn find_user_agreement(&self, user_id: i32, group: &str) -> Result<Option<bool>>;
-
-            async fn store_user_agreement(&self, user_id: i32, group: &str, agreed: bool) -> Result<()>;
-
-            async fn get_latest_term_for_group(&self, group: &str) -> Result<Option<TermOfUse>>;
-
-            async fn store_latest_term_for_group(&self, term: &TermOfUse) -> Result<()>;
-
-            async fn invalidate_cache_for_group(&self, group: &str) -> Result<()>;
-        }
-    }
-
-    mock! {
-        pub StorageService {}
-
-        #[async_trait::async_trait]
-        impl domain::data::service::StorageService for StorageService {
-            async fn upload_file(&self, file: &Path, content_type: &str) -> Result<String>;
-
-            async fn delete_file(&self, path: &str) -> Result<()>;
-
-            async fn get_file_url(&self, path: &str) -> Result<String>;
-        }
-    }
-
-    mock! {
-        pub PublisherService {}
-
-        #[async_trait::async_trait]
-        impl domain::data::service::PublisherService for PublisherService {
-            async fn publish_agreement(&self, dto: AcceptedTermOfUseDTO) -> Result<()>;
-        }
-    }
+    use crate::{
+        Config,
+        actix::v1::{controller::configure, payload::CreateAgreementPayload},
+        mocks::*,
+    };
 
     fn build_config(
         repository: MockDatabaseRepository,

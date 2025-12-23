@@ -1,4 +1,4 @@
-use domain::data::repository::DatabaseRepository;
+use domain::data::{DatabaseRepositoryWithHealthCheck, repository::DatabaseRepository};
 use migration::{Migrator, MigratorTrait};
 use sea_orm::{Database, DatabaseConnection};
 
@@ -50,3 +50,5 @@ impl PostgresRepository {
 }
 
 impl DatabaseRepository for PostgresRepository {}
+
+impl DatabaseRepositoryWithHealthCheck for PostgresRepository {}
