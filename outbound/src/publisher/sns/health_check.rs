@@ -31,9 +31,9 @@ mod tests {
     #[tokio::test]
     #[test_log::test]
     async fn health_check_ping_should_succeed_with_valid_sns_client() {
-        let config = SNSPublisher::new().await;
+        let publisher = SNSPublisher::new().await;
 
-        let result = config.ping().await;
+        let result = publisher.ping().await;
 
         assert!(result.is_ok(), "ping should succeed with valid SNS client");
     }
