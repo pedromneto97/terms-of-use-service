@@ -18,6 +18,7 @@ fn map_status_to_response(status: ServingStatus) -> HealthCheckResponse {
 
 #[tonic::async_trait]
 impl Health for GrpcService {
+    #[tracing::instrument(skip(self))]
     async fn check(
         &self,
         _: Request<HealthCheckRequest>,
@@ -35,6 +36,7 @@ impl Health for GrpcService {
 
     type WatchStream = WatchStream<Result<HealthCheckResponse, Status>>;
 
+    #[tracing::instrument(skip(self))]
     async fn watch(
         &self,
         _: Request<HealthCheckRequest>,
