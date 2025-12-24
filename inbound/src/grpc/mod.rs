@@ -14,6 +14,8 @@ tonic::include_proto!("terms_of_use");
 mod file_upload;
 mod mapper;
 mod server;
+#[cfg(test)]
+mod tests;
 
 pub async fn start_grpc_server(config: Config) -> Result<(), impl Error> {
     let host = std::env::var("GRPC_HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
