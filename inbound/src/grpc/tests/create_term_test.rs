@@ -1,7 +1,7 @@
 use chrono::Utc;
 use domain::{entities::TermOfUse, errors::TermsOfUseError};
 use mockall::predicate::eq;
-use tokio::sync::oneshot;
+use tokio::{net::TcpStream, sync::oneshot, time};
 use tonic::transport::Server;
 
 use crate::{
@@ -36,7 +36,13 @@ async fn spawn_test_server(service: GrpcService) -> (String, oneshot::Sender<()>
         }
     });
 
-    tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+    let max_attempts = 50;
+    for _ in 0..max_attempts {
+        if TcpStream::connect(addr).await.is_ok() {
+            break;
+        }
+        time::sleep(time::Duration::from_millis(20)).await;
+    }
 
     (url, tx)
 }
