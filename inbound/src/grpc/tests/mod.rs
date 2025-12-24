@@ -9,6 +9,7 @@ mod create_consent_test;
 mod create_term_test;
 mod get_latest_terms_test;
 mod has_consent_test;
+mod health_check_test;
 
 pub fn create_test_config(
     repository: Option<MockDatabaseRepository>,
