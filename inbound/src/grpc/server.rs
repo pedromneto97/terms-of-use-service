@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use domain::{
     dto::CreateTermOfUseDTO,
     use_cases::{
@@ -23,11 +25,11 @@ use crate::{
 };
 
 pub struct GrpcService {
-    config: Config,
+    pub(crate) config: Arc<Config>,
 }
 
 impl GrpcService {
-    pub fn new(config: Config) -> Self {
+    pub fn new(config: Arc<Config>) -> Self {
         Self { config }
     }
 }

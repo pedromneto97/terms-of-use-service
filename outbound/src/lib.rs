@@ -17,7 +17,7 @@ pub use cache::redis::RedisCache;
 #[cfg(feature = "valkey")]
 pub use cache::valkey::ValkeyCache;
 
-#[cfg(not(feature = "cache"))]
+#[cfg(any(not(feature = "cache"), test))]
 pub use cache::noop::NoopCache;
 
 // Storage adapters
@@ -34,5 +34,5 @@ pub use publisher::sns::SNSPublisher;
 #[cfg(feature = "kafka")]
 pub use publisher::kafka::KafkaPublisher;
 
-#[cfg(not(feature = "publisher"))]
+#[cfg(any(not(feature = "publisher"), test))]
 pub use publisher::noop::NoopPublisher;

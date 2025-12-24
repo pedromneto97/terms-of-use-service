@@ -1,4 +1,4 @@
-#[cfg(not(feature = "cache"))]
+#[cfg(any(not(feature = "cache"), test))]
 pub mod noop;
 
 #[cfg(feature = "redis")]
