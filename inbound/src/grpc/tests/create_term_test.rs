@@ -25,12 +25,15 @@ async fn spawn_test_server(service: GrpcService) -> (String, oneshot::Sender<()>
 
     tokio::spawn(async move {
         let incoming = tokio_stream::wrappers::TcpListenerStream::new(listener);
-        Server::builder()
+        if let Err(e) = Server::builder()
             .add_service(TermsOfUseServiceServer::new(service))
             .serve_with_incoming_shutdown(incoming, async {
                 rx.await.ok();
             })
             .await
+        {
+            eprintln!("gRPC test server failed: {e}");
+        }
     });
 
     tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
