@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use domain::{
-    data::{health_check::HealthCheck, service::CacheService},
+    data::{CacheServiceWithHealthCheck, health_check::HealthCheck, service::CacheService},
     entities::TermOfUse,
     errors::Result,
 };
@@ -43,6 +43,8 @@ impl HealthCheck for NoopCache {
         Ok(())
     }
 }
+
+impl CacheServiceWithHealthCheck for NoopCache {}
 
 #[cfg(test)]
 mod tests {
