@@ -1,15 +1,14 @@
 use tokio_stream::StreamExt;
 use tonic::Request;
+use tonic_health::pb::{
+    HealthCheckRequest, health_check_response::ServingStatus as PbServingStatus,
+    health_server::Health,
+};
 
 use crate::{
     grpc::server::GrpcService,
     grpc::tests::create_test_config,
     mocks::{MockCacheService, MockDatabaseRepository, MockPublisherService, MockStorageService},
-};
-
-use tonic_health::pb::{
-    HealthCheckRequest, health_check_response::ServingStatus as PbServingStatus,
-    health_server::Health,
 };
 
 #[tokio::test]
@@ -32,7 +31,7 @@ async fn test_health_check_check_serving_when_all_ok() {
     let req = Request::new(HealthCheckRequest {
         service: String::new(),
     });
-    let res = Health::check(&service, req).await.unwrap().into_inner();
+    let res = service.check(req).await.unwrap().into_inner();
 
     assert_eq!(res.status, PbServingStatus::Serving as i32);
 }
