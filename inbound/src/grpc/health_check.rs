@@ -47,8 +47,6 @@ impl Health for GrpcService {
 
         tokio::spawn(async move {
             loop {
-                time::sleep(Duration::from_secs(5)).await;
-
                 let status = config.ping().await.values().all(|status| *status);
 
                 let serving_status = if status {
@@ -62,6 +60,8 @@ impl Health for GrpcService {
                 if tx.send(response).is_err() {
                     break;
                 }
+
+                time::sleep(Duration::from_secs(5)).await;
             }
         });
 
