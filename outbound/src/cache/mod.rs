@@ -1,4 +1,4 @@
-#[cfg(any(not(feature = "cache"), clippy, rustfmt, test))]
+#[cfg(any(not(feature = "cache"), test))]
 pub mod noop;
 
 #[cfg(feature = "redis")]

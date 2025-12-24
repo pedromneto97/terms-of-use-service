@@ -17,7 +17,7 @@ pub use cache::redis::RedisCache;
 #[cfg(feature = "valkey")]
 pub use cache::valkey::ValkeyCache;
 
-#[cfg(any(not(feature = "cache"), clippy, rustfmt, test))]
+#[cfg(any(not(feature = "cache"), test))]
 pub use cache::noop::NoopCache;
 
 // Storage adapters
@@ -34,5 +34,5 @@ pub use publisher::sns::SNSPublisher;
 #[cfg(feature = "kafka")]
 pub use publisher::kafka::KafkaPublisher;
 
-#[cfg(any(not(feature = "publisher"), clippy, rustfmt, test))]
+#[cfg(any(not(feature = "publisher"), test))]
 pub use publisher::noop::NoopPublisher;
