@@ -24,13 +24,13 @@ impl Health for GrpcService {
     ) -> Result<Response<HealthCheckResponse>, Status> {
         let status = self.config.ping().await.values().all(|status| *status);
 
-        let status = if status {
+        let serving_status = if status {
             ServingStatus::Serving
         } else {
             ServingStatus::NotServing
         };
 
-        Ok(Response::new(map_status_to_response(status)))
+        Ok(Response::new(map_status_to_response(serving_status)))
     }
 
     type WatchStream = WatchStream<Result<HealthCheckResponse, Status>>;
