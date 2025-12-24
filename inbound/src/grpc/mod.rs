@@ -1,6 +1,7 @@
-use std::error::Error;
+use std::{error::Error, sync::Arc};
 
 use tonic::transport::Server;
+use tonic_health::pb::health_server::HealthServer;
 use tonic_tracing_opentelemetry::middleware::server::OtelGrpcLayer;
 use tracing::error;
 
@@ -12,8 +13,10 @@ use crate::{
 tonic::include_proto!("terms_of_use");
 
 mod file_upload;
+mod health_check;
 mod mapper;
 mod server;
+
 #[cfg(test)]
 mod tests;
 
@@ -25,12 +28,13 @@ pub async fn start_grpc_server(config: Config) -> Result<(), impl Error> {
         .expect("GRPC_PORT must be a valid u16 number");
 
     let addr = format!("{host}:{port}").parse().expect("Invalid host/port");
-    let service = GrpcService::new(config);
+    let service = Arc::new(GrpcService::new(Arc::new(config)));
 
     let mut server = Server::builder().layer(OtelGrpcLayer::default());
 
     server
-        .add_service(TermsOfUseServiceServer::new(service))
+        .add_service(HealthServer::from_arc(service.clone()))
+        .add_service(TermsOfUseServiceServer::from_arc(service))
         .serve(addr)
         .await
         .map_err(|e| {

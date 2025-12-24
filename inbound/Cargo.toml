@@ -19,7 +19,9 @@ prost = { version = "0.14", optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
 tokio = { version = "1", optional = true }
 tonic = { version = "0.14", features = ["zstd"], optional = true }
+tonic-health = { version = "0.14", optional = true }
 tonic-prost = { version = "0.14", optional = true }
+tokio-stream = { version = "0.1", optional = true }
 tonic-tracing-opentelemetry = { version = "0.32.0", optional = true }
 tracing = { version = "0.1" }
 uuid = { version = "1.19", optional = true, features = ["v4"] }
@@ -32,7 +34,7 @@ serde_json = "1.0"
 mockall = "0.14"
 async-trait = "0.1"
 chrono = "0.4"
-tokio-stream = "0.1"
+
 futures = "0.3"
 
 [features]
@@ -44,7 +46,10 @@ grpc = [
     "tonic-tracing-opentelemetry",
     "uuid",
     "tokio/fs",
+    "tokio/time",
     "init-tracing-opentelemetry",
+    "tonic-health",
+    "tokio-stream",
 ]
 actix-web = [
     "dep:actix-web",

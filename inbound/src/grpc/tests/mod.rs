@@ -15,11 +15,11 @@ pub fn create_test_config(
     cache: Option<MockCacheService>,
     storage: Option<MockStorageService>,
     publisher: Option<MockPublisherService>,
-) -> Config {
-    Config {
+) -> Arc<Config> {
+    Arc::new(Config {
         repository: Arc::new(repository.unwrap_or(MockDatabaseRepository::new())),
         cache: Arc::new(cache.unwrap_or(MockCacheService::new())),
         storage: Arc::new(storage.unwrap_or(MockStorageService::new())),
         publisher: Arc::new(publisher.unwrap_or(MockPublisherService::new())),
-    }
+    })
 }
