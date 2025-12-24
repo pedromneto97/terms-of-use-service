@@ -1,4 +1,4 @@
-#[cfg(any(not(feature = "publisher"), test))]
+#[cfg(any(not(feature = "publisher"), clippy, rustfmt, test))]
 pub mod noop;
 
 #[cfg(feature = "sns")]
