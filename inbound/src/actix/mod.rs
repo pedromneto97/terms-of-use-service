@@ -1,11 +1,15 @@
+use actix_multipart::form::MultipartFormConfig;
 use actix_web::{
     App, HttpServer,
     middleware::{Compress, Logger},
-    web::Data,
+    web::{Data, JsonConfig, QueryConfig},
 };
 use opentelemetry_instrumentation_actix_web::{RequestMetrics, RequestTracing};
 
-use crate::config::Config;
+use crate::{
+    actix::error::{json_error_handler, multipart_error_handler, query_error_handler},
+    config::Config,
+};
 
 mod error;
 mod healthcheck;
@@ -24,6 +28,9 @@ pub async fn start_actix_server(config: Config) -> std::io::Result<()> {
             .wrap(Compress::default())
             .wrap(RequestTracing::new())
             .wrap(RequestMetrics::default())
+            .app_data(JsonConfig::default().error_handler(json_error_handler))
+            .app_data(QueryConfig::default().error_handler(query_error_handler))
+            .app_data(MultipartFormConfig::default().error_handler(multipart_error_handler))
             .app_data(Data::new(config.clone()))
             .configure(healthcheck::configure)
             .configure(v1::controller::configure)
