@@ -65,33 +65,45 @@ pub fn query_error_handler(err: QueryPayloadError, _req: &HttpRequest) -> actix_
 
 #[tracing::instrument]
 pub fn multipart_error_handler(err: MultipartError, _req: &HttpRequest) -> actix_web::Error {
-    let safe_detail = match err {
-        MultipartError::ContentTypeMissing => "Content-Type header is missing. Multipart required.",
-        MultipartError::ContentTypeParse => "Failed to parse Content-Type header.",
-        MultipartError::ContentTypeIncompatible => "Content-Type not compatible with multipart",
-        MultipartError::BoundaryMissing => "Boundary parameter missing from Content-Type",
+    let safe_detail = match &err {
+        MultipartError::ContentTypeMissing => {
+            "Content-Type header is missing. Multipart required.".to_string()
+        }
+        MultipartError::ContentTypeParse => "Failed to parse Content-Type header.".to_string(),
+        MultipartError::ContentTypeIncompatible => {
+            "Content-Type not compatible with multipart".to_string()
+        }
+        MultipartError::BoundaryMissing => {
+            "Boundary parameter missing from Content-Type".to_string()
+        }
         MultipartError::ContentDispositionMissing => {
-            "Content-Disposition header missing in multipart"
+            "Content-Disposition header missing in multipart".to_string()
         }
         MultipartError::ContentDispositionNameMissing => {
-            "Name parameter missing in Content-Disposition"
+            "Name parameter missing in Content-Disposition".to_string()
         }
-        MultipartError::Nested => "Nested multipart not supported",
-        MultipartError::Incomplete => "Multipart stream ended unexpectedly",
-        MultipartError::Parse(_) => "Failed to parse multipart data",
-        MultipartError::Payload(_) => "Payload error in multipart request",
-        MultipartError::NotConsumed => "Multipart field was not fully consumed",
-        MultipartError::Field { .. } => "Error in multipart field",
-        MultipartError::DuplicateField(_) => "Duplicate field in multipart request",
-        MultipartError::MissingField(_) => "Required multipart field missing",
-        MultipartError::UnknownField(_) => "Unknown field in multipart request",
-        _ => "Bad multipart request",
+        MultipartError::Nested => "Nested multipart not supported".to_string(),
+        MultipartError::Incomplete => "Multipart stream ended unexpectedly".to_string(),
+        MultipartError::Parse(_) => "Failed to parse multipart data".to_string(),
+        MultipartError::Payload(_) => "Payload error in multipart request".to_string(),
+        MultipartError::NotConsumed => "Multipart field was not fully consumed".to_string(),
+        MultipartError::Field { name, .. } => {
+            format!("Error in multipart field: {name}")
+        }
+        MultipartError::DuplicateField(field) => {
+            format!("Duplicate field in multipart request: {field}")
+        }
+        MultipartError::MissingField(field) => format!("Required multipart field missing: {field}"),
+        MultipartError::UnknownField(field) => {
+            format!("Unknown field in multipart request: {field}")
+        }
+        _ => "Bad multipart request".to_string(),
     };
 
     error!(error = ?err, "multipart error");
 
     ProblemDetails::bad_request()
-        .with_detail(safe_detail.to_string())
+        .with_detail(safe_detail)
         .into()
 }
 
