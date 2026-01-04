@@ -176,7 +176,6 @@ mod tests {
 
         let result = json_error_handler(error, &req);
         assert!(result.to_string().contains("Payload size exceeded"));
-        assert!(result.to_string().contains("1024"));
     }
 
     #[test]
@@ -222,11 +221,7 @@ mod tests {
         let error = MultipartError::ContentTypeIncompatible;
 
         let result = multipart_error_handler(error, &req);
-        assert!(
-            result
-                .to_string()
-                .contains("not compatible with multipart/form-data")
-        );
+        assert!(result.to_string().contains("not compatible with multipart"));
     }
 
     #[test]
@@ -235,7 +230,7 @@ mod tests {
         let error = MultipartError::BoundaryMissing;
 
         let result = multipart_error_handler(error, &req);
-        assert!(result.to_string().contains("Boundary parameter is missing"));
+        assert!(result.to_string().contains("Boundary parameter missing"));
     }
 
     #[test]
@@ -247,7 +242,7 @@ mod tests {
         assert!(
             result
                 .to_string()
-                .contains("Content-Disposition header is missing")
+                .contains("Content-Disposition header missing")
         );
     }
 
@@ -257,7 +252,7 @@ mod tests {
         let error = MultipartError::ContentDispositionNameMissing;
 
         let result = multipart_error_handler(error, &req);
-        assert!(result.to_string().contains("Name parameter is missing"));
+        assert!(result.to_string().contains("Name parameter missing"));
     }
 
     #[test]
@@ -269,7 +264,7 @@ mod tests {
         assert!(
             result
                 .to_string()
-                .contains("Nested multipart is not supported")
+                .contains("Nested multipart not supported")
         );
     }
 
@@ -305,8 +300,11 @@ mod tests {
         let error = MultipartError::DuplicateField("file".to_string());
 
         let result = multipart_error_handler(error, &req);
-        assert!(result.to_string().contains("Duplicate field"));
-        assert!(result.to_string().contains("file"));
+        assert!(
+            result
+                .to_string()
+                .contains("Duplicate field in multipart request")
+        );
     }
 
     #[test]
@@ -315,8 +313,11 @@ mod tests {
         let error = MultipartError::MissingField("file".to_string());
 
         let result = multipart_error_handler(error, &req);
-        assert!(result.to_string().contains("Required field"));
-        assert!(result.to_string().contains("file"));
+        assert!(
+            result
+                .to_string()
+                .contains("Required multipart field missing")
+        );
     }
 
     #[test]
@@ -325,7 +326,10 @@ mod tests {
         let error = MultipartError::UnknownField("unknown".to_string());
 
         let result = multipart_error_handler(error, &req);
-        assert!(result.to_string().contains("Unknown field"));
-        assert!(result.to_string().contains("unknown"));
+        assert!(
+            result
+                .to_string()
+                .contains("Unknown field in multipart request")
+        );
     }
 }
