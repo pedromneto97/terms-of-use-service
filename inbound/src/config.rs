@@ -56,7 +56,6 @@ mod tests {
 
     use crate::{Config, mocks::*};
 
-    #[cfg(feature = "actix-web")]
     #[tokio::test]
     async fn config_new_creates_instance_with_services() {
         let repository = MockDatabaseRepository::new();
@@ -79,7 +78,6 @@ mod tests {
         assert!(Arc::strong_count(&config.publisher) >= 1);
     }
 
-    #[cfg(feature = "actix-web")]
     #[tokio::test]
     async fn ping_returns_all_healthy_when_services_are_ok() {
         let mut repository = MockDatabaseRepository::new();
@@ -111,7 +109,6 @@ mod tests {
         assert_eq!(results.len(), 4);
     }
 
-    #[cfg(feature = "actix-web")]
     #[tokio::test]
     async fn ping_returns_false_for_unhealthy_repository() {
         let mut repository = MockDatabaseRepository::new();
@@ -144,7 +141,6 @@ mod tests {
         assert_eq!(results.get("publisher"), Some(&true));
     }
 
-    #[cfg(feature = "actix-web")]
     #[tokio::test]
     async fn ping_returns_false_for_unhealthy_cache() {
         let mut repository = MockDatabaseRepository::new();
@@ -177,7 +173,6 @@ mod tests {
         assert_eq!(results.get("publisher"), Some(&true));
     }
 
-    #[cfg(feature = "actix-web")]
     #[tokio::test]
     async fn ping_returns_multiple_false_when_multiple_services_fail() {
         let mut repository = MockDatabaseRepository::new();
@@ -212,7 +207,6 @@ mod tests {
         assert_eq!(results.get("publisher"), Some(&true));
     }
 
-    #[cfg(feature = "actix-web")]
     #[tokio::test]
     async fn config_is_cloneable() {
         let repository = MockDatabaseRepository::new();
