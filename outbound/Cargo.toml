@@ -14,7 +14,7 @@ domain = { path = "../domain" }
 google-cloud-storage = { version = "1.5", optional = true }
 migration = { path = "../migration", optional = true }
 rdkafka = { version = "0.38", optional = true }
-sea-orm = { version = "~2.0.0-rc.27", features = [
+sea-orm = { version = "~2.0.0-rc.28", features = [
     "macros",
     "with-chrono",
 ], optional = true, default-features = false }
@@ -29,7 +29,7 @@ aws-credential-types = "1.2"
 aws-types = "1.3"
 redis-test = "0.12"
 once_cell = "1.21"
-sea-orm = { version = "~2.0.0-rc.27", features = [
+sea-orm = { version = "~2.0.0-rc.28", features = [
     "mock",
 ], default-features = false }
 test-log = { version = "0.2.19", features = [
