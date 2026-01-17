@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 aws-config = { version = "1.8", optional = true }
-aws-sdk-dynamodb = { version = "1.101", optional = true }
+aws-sdk-dynamodb = { version = "1.102", optional = true }
 aws-sdk-s3 = { version = "1.119", optional = true }
 aws-sdk-sns = { version = "1.92", optional = true }
 chrono = "0.4.42"
